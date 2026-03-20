@@ -10,7 +10,7 @@ const { leaderboardRouter, statsRouter, adminRouter } = require('./routes/leader
 const app = express();
 
 // ── Middleware ──
-app.use(cors());
+app.use(cors({ origin: ['http://localhost:3000', 'https://smart-library-three.vercel.app/'] }));
 app.use(express.json());
 
 // ── Health Check ──
