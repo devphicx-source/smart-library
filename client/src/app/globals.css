@@ -1,0 +1,219 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --gradient-start: #0f172a;
+    --gradient-mid: #1e1b4b;
+    --gradient-end: #0f172a;
+    --accent: #818cf8;
+    --accent-glow: rgba(129, 140, 248, 0.15);
+    --card-bg: rgba(30, 27, 75, 0.5);
+    --card-border: rgba(129, 140, 248, 0.2);
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
+    color: #e2e8f0;
+    min-height: 100vh;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer components {
+  /* ── Glassmorphism Card ── */
+  .glass-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--card-border);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .glass-card:hover {
+    border-color: rgba(129, 140, 248, 0.4);
+    box-shadow: 0 8px 32px var(--accent-glow);
+  }
+
+  /* ── Primary Button ── */
+  .btn-primary {
+    background: linear-gradient(135deg, #6366f1, #818cf8);
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* ── Success Button ── */
+  .btn-success {
+    background: linear-gradient(135deg, #059669, #34d399);
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+  }
+
+  .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(52, 211, 153, 0.4);
+  }
+
+  /* ── Danger Button ── */
+  .btn-danger {
+    background: linear-gradient(135deg, #dc2626, #f87171);
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+  }
+
+  .btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(248, 113, 113, 0.4);
+  }
+
+  /* ── Input ── */
+  .input-glass {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--card-border);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: #e2e8f0;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s ease;
+    width: 100%;
+  }
+
+  .input-glass:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  .input-glass::placeholder {
+    color: #64748b;
+  }
+
+  /* ── Badge ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+  }
+
+  .badge-success {
+    background: rgba(52, 211, 153, 0.15);
+    color: var(--success);
+    border: 1px solid rgba(52, 211, 153, 0.3);
+  }
+
+  .badge-warning {
+    background: rgba(251, 191, 36, 0.15);
+    color: var(--warning);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+  }
+
+  .badge-danger {
+    background: rgba(248, 113, 113, 0.15);
+    color: var(--danger);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+  }
+
+  /* ── Streak Fire Animation ── */
+  @keyframes pulse-glow {
+    0%, 100% { 
+      text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+    }
+    50% { 
+      text-shadow: 0 0 20px rgba(251, 191, 36, 0.8), 0 0 40px rgba(251, 146, 36, 0.4);
+    }
+  }
+
+  .streak-fire {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  /* ── Timer Pulse ── */
+  @keyframes timer-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .timer-active {
+    animation: timer-pulse 1.5s ease-in-out infinite;
+  }
+
+  /* ── Loading Spinner ── */
+  .spinner {
+    width: 2rem;
+    height: 2rem;
+    border: 3px solid rgba(129, 140, 248, 0.2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ── Desk Grid ── */
+  .desk-available {
+    background: rgba(52, 211, 153, 0.1);
+    border: 1px solid rgba(52, 211, 153, 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .desk-available:hover {
+    background: rgba(52, 211, 153, 0.2);
+    transform: scale(1.05);
+    cursor: pointer;
+  }
+
+  .desk-occupied {
+    background: rgba(248, 113, 113, 0.1);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    cursor: default;
+  }
+}
