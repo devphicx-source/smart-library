@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env*
+!.env.example
+
+# Claude / Antigravity / Agents
+task.md
+implementation_plan.md
+walkthrough.md
+.gemini/
+.agents/
+_agents/
+.agent/
+_agent/
+brain/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS Files
+.DS_Store
+Thumbs.db
