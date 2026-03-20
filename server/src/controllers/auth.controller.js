@@ -15,7 +15,7 @@ function generateOTP() {
  */
 exports.sendOtp = async (req, res) => {
   try {
-    const { phone } = req.body;
+    const { phone, name } = req.body;
 
     let user = await User.findOne({ phone });
 
@@ -29,7 +29,7 @@ exports.sendOtp = async (req, res) => {
     } else {
       // Auto-register on first OTP request
       user = await User.create({
-        name: 'New Student',
+        name: name || 'New Student',
         phone,
         otp,
         otpExpiresAt,
@@ -40,7 +40,7 @@ exports.sendOtp = async (req, res) => {
     // For dev, we log it
     console.log(`🔑 OTP for ${phone}: ${otp}`);
 
-    return success(res, { phone }, 'OTP sent successfully');
+    return success(res, { phone, isNew: !user }, 'OTP sent successfully');
   } catch (err) {
     console.error('sendOtp error:', err);
     return error(res, 'Failed to send OTP', 500);

@@ -1,4 +1,7 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+let API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+if (API_BASE && !API_BASE.endsWith('/api')) {
+  API_BASE = API_BASE.replace(/\/$/, '') + '/api';
+}
 
 /**
  * Fetch wrapper with JWT auth and error handling.
@@ -27,7 +30,7 @@ async function apiFetch(endpoint, options = {}) {
 }
 
 // ── Auth ──
-export const sendOtp = (phone) => apiFetch('/auth/send-otp', { method: 'POST', body: JSON.stringify({ phone }) });
+export const sendOtp = (phone, name) => apiFetch('/auth/send-otp', { method: 'POST', body: JSON.stringify({ phone, name }) });
 export const verifyOtp = (phone, otp) => apiFetch('/auth/verify-otp', { method: 'POST', body: JSON.stringify({ phone, otp }) });
 export const getMe = () => apiFetch('/auth/me');
 export const updateProfile = (name) => apiFetch('/auth/profile', { method: 'PATCH', body: JSON.stringify({ name }) });
@@ -56,3 +59,4 @@ export const getRecentActivity = () => apiFetch('/admin/activity');
 export const getAllStudents = (search = '') => apiFetch(`/admin/students${search ? `?search=${encodeURIComponent(search)}` : ''}`);
 export const getAnalytics = () => apiFetch('/admin/analytics');
 export const getNotifications = (since) => apiFetch(`/admin/notifications${since ? `?since=${encodeURIComponent(since)}` : ''}`);
+export const createStudent = (data) => apiFetch('/admin/students', { method: 'POST', body: JSON.stringify(data) });

@@ -295,3 +295,35 @@ exports.getNotifications = async (req, res) => {
     return error(res, 'Failed to fetch notifications', 500);
   }
 };
+
+/**
+ * POST /api/admin/students — Admin create student
+ */
+exports.createStudent = async (req, res) => {
+  try {
+    const User = require('../models/User');
+    const { name, phone } = req.body;
+
+    if (!name || !phone) {
+      return error(res, 'Name and phone are required', 400);
+    }
+
+    // Check if phone already exists
+    const existing = await User.findOne({ phone });
+    if (existing) {
+      return error(res, 'A user with this phone number already exists', 400);
+    }
+
+    const student = await User.create({
+      name,
+      phone,
+      role: 'student',
+      isActive: true,
+    });
+
+    return success(res, student, 'Student created successfully', 201);
+  } catch (err) {
+    console.error('Create student error:', err);
+    return error(res, err.message || 'Failed to create student', 500);
+  }
+};

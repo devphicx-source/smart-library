@@ -18,5 +18,6 @@ adminRouter.get('/activity', authenticate, authorize('admin'), leaderboardCtrl.g
 adminRouter.get('/students', authenticate, authorize('admin'), leaderboardCtrl.getAllStudents);
 adminRouter.get('/analytics', authenticate, authorize('admin'), leaderboardCtrl.getAnalytics);
 adminRouter.get('/notifications', authenticate, authorize('admin'), leaderboardCtrl.getNotifications);
+adminRouter.post('/students', authenticate, authorize('admin'), leaderboardCtrl.createStudent);
 
 module.exports = { leaderboardRouter, statsRouter, adminRouter };

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/lib/auth';
-import { getAllStudents } from '@/lib/api';
+import { getAllStudents, createStudent } from '@/lib/api';
 
 export default function StudentsPage() {
   const { user } = useAuth();
@@ -10,6 +10,13 @@ export default function StudentsPage() {
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  
+  // Add Student State
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newPhone, setNewPhone] = useState('+91');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [modalError, setModalError] = useState('');
 
   // Debounce search
   useEffect(() => {
@@ -32,26 +39,53 @@ export default function StudentsPage() {
     }
   }
 
+  async function handleAddStudent(e) {
+    e.preventDefault();
+    setModalError('');
+    setIsSubmitting(true);
+
+    try {
+      await createStudent({ name: newName, phone: newPhone });
+      setShowAddModal(false);
+      setNewName('');
+      setNewPhone('+91');
+      loadStudents();
+    } catch (err) {
+      setModalError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <div className="space-y-5 max-w-[1400px]">
       {/* Top Bar */}
       <div className="flex items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name or phone..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl text-[13px]
-              bg-[#0f1328]/80 border border-white/[0.06] text-slate-200
-              placeholder-slate-600 outline-none focus:border-indigo-500/40
-              transition-all"
-          />
+        <div className="flex items-center gap-4 flex-1">
+          <div className="relative flex-1 max-w-sm">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name or phone..."
+              className="w-full pl-10 pr-4 py-2 rounded-xl text-[13px]
+                bg-[#0f1328]/80 border border-white/[0.06] text-slate-200
+                placeholder-slate-600 outline-none focus:border-indigo-500/40
+                transition-all"
+            />
+          </div>
+          <span className="text-[11px] text-slate-600 font-medium">{total} students</span>
         </div>
-        <span className="text-[11px] text-slate-600 font-medium">{total} students</span>
+        
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-[12px] font-bold transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/20"
+        >
+          <span>＋</span> Add Student
+        </button>
       </div>
 
       {/* Students Table */}
@@ -115,6 +149,59 @@ export default function StudentsPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Add Student Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-[#0f1328] border border-white/[0.08] p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-bold text-white">Add New Student</h2>
+              <button onClick={() => setShowAddModal(false)} className="text-slate-500 hover:text-white transition-colors">✕</button>
+            </div>
+
+            {modalError && (
+              <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs text-center">
+                {modalError}
+              </div>
+            )}
+
+            <form onSubmit={handleAddStudent} className="space-y-4">
+              <div>
+                <label className="block text-[11px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5 ml-1">Full Name</label>
+                <input
+                  type="text"
+                  required
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="e.g. Rahul Kumar"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:border-indigo-500/50 outline-none transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5 ml-1">Phone Number</label>
+                <input
+                  type="tel"
+                  required
+                  value={newPhone}
+                  onChange={(e) => setNewPhone(e.target.value)}
+                  placeholder="+919988776655"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:border-indigo-500/50 outline-none transition-all"
+                />
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-3 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold transition-all disabled:opacity-50 shadow-lg shadow-indigo-500/20"
+                >
+                  {isSubmitting ? 'Creating...' : 'Create Student'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
