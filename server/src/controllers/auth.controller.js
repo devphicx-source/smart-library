@@ -125,3 +125,71 @@ exports.updateProfile = async (req, res) => {
     return error(res, 'Failed to update profile', 500);
   }
 };
+
+/**
+ * POST /api/auth/check-user
+ * Check if user exists (for frontend validation before OTP)
+ */
+exports.checkUser = async (req, res) => {
+  try {
+    const { phone } = req.body;
+    const user = await User.findOne({ phone });
+    return success(res, { exists: !!user });
+  } catch (err) {
+    return error(res, 'Failed to check user', 500);
+  }
+};
+
+/**
+ * POST /api/auth/firebase-login
+ * Verifies Firebase token and issues local JWT
+ */
+exports.firebaseLogin = async (req, res) => {
+  try {
+    const { idToken, name } = req.body;
+    const admin = require('../config/firebase');
+
+    // Verify Firebase token
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const phone = decodedToken.phone_number;
+
+    if (!phone) {
+      return error(res, 'Phone number not found in token', 400);
+    }
+
+    let user = await User.findOne({ phone });
+
+    // ── STRICT VALIDATION ──
+    if (!name) { // Login Mode
+      if (!user) {
+        return error(res, 'No account found with this phone number. Please sign up first.', 404);
+      }
+    } else { // Sign Up Mode
+      if (user) {
+        return error(res, 'This phone number is already registered. Please login instead.', 400);
+      }
+      // Create new user
+      user = await User.create({
+        name,
+        phone,
+        role: 'student',
+        isActive: true,
+      });
+    }
+
+    // Generate our JWT
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
+    );
+
+    return success(res, {
+      token,
+      user: user.toJSON(),
+    }, 'Login successful');
+  } catch (err) {
+    console.error('firebaseLogin error:', err);
+    return error(res, 'Authentication failed', 401);
+  }
+};

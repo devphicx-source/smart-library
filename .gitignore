@@ -24,3 +24,6 @@ brain/
 # OS Files
 .DS_Store
 Thumbs.db
+
+# Firebase Credentials
+server/src/config/firebase-service-account.json

@@ -34,6 +34,8 @@ export const sendOtp = (phone, name) => apiFetch('/auth/send-otp', { method: 'PO
 export const verifyOtp = (phone, otp) => apiFetch('/auth/verify-otp', { method: 'POST', body: JSON.stringify({ phone, otp }) });
 export const getMe = () => apiFetch('/auth/me');
 export const updateProfile = (name) => apiFetch('/auth/profile', { method: 'PATCH', body: JSON.stringify({ name }) });
+export const firebaseLogin = (idToken, name) => apiFetch('/auth/firebase-login', { method: 'POST', body: JSON.stringify({ idToken, name }) });
+export const checkUser = (phone) => apiFetch('/auth/check-user', { method: 'POST', body: JSON.stringify({ phone }) });
 
 // ── Sessions ──
 export const checkIn = (deskId) => apiFetch('/sessions/check-in', { method: 'POST', body: JSON.stringify({ deskId }) });

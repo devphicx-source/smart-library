@@ -29,4 +29,10 @@ router.get('/me', authenticate, authCtrl.getMe);
 // PATCH /api/auth/profile
 router.patch('/profile', authenticate, authCtrl.updateProfile);
 
+// POST /api/auth/firebase-login
+router.post('/firebase-login', authCtrl.firebaseLogin);
+
+// POST /api/auth/check-user
+router.post('/check-user', authCtrl.checkUser);
+
 module.exports = router;

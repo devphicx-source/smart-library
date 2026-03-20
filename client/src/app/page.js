@@ -1,29 +1,50 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { sendOtp, verifyOtp } from '@/lib/api';
+import { firebaseLogin, getMe, checkUser } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { auth } from '@/lib/firebase';
+import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 
 export default function LoginPage() {
-  const [phone, setPhone] = useState('+91');
+  const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [name, setName] = useState('');
   const [mode, setMode] = useState('login'); // 'login' | 'signup'
   const [step, setStep] = useState('phone'); // 'phone' | 'otp'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [confirmationResult, setConfirmationResult] = useState(null);
+  
   const router = useRouter();
   const { login } = useAuth();
+
+  // Initialize reCAPTCHA
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible',
+        callback: (response) => {
+          // reCAPTCHA solved, allow signInWithPhoneNumber.
+        }
+      });
+    }
+    return () => {
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        delete window.recaptchaVerifier;
+      }
+    };
+  }, []);
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
     setError('');
 
     // Client-side validation
-    const phoneRegex = /^\+91\d{10}$/;
-    if (!phoneRegex.test(phone)) {
-      setError('Enter full 10-digit number after +91 (e.g. +919876543210)');
+    if (!/^\d{10}$/.test(phone)) {
+      setError('Please enter a valid 10-digit phone number');
       return;
     }
 
@@ -32,12 +53,39 @@ export default function LoginPage() {
       return;
     }
 
+    const fullPhone = `+91${phone}`;
+
     setLoading(true);
     try {
-      await sendOtp(phone, mode === 'signup' ? name : undefined);
+      // 1. Check user existence in our DB before sending OTP
+      const { data } = await checkUser(fullPhone);
+      
+      if (mode === 'login' && !data.exists) {
+        setError('No account found with this phone number. Please sign up first.');
+        setLoading(false);
+        return;
+      }
+      
+      if (mode === 'signup' && data.exists) {
+        setError('This phone number is already registered. Please login instead.');
+        setLoading(false);
+        return;
+      }
+
+      // 2. If check passes, send OTP via Firebase
+      const appVerifier = window.recaptchaVerifier;
+      const confirmation = await signInWithPhoneNumber(auth, fullPhone, appVerifier);
+      setConfirmationResult(confirmation);
       setStep('otp');
     } catch (err) {
-      setError(err.message);
+      console.error('Firebase Auth Error:', err);
+      if (err.code === 'auth/invalid-phone-number') {
+        setError('Invalid phone number format.');
+      } else if (err.code === 'auth/too-many-requests') {
+        setError('Too many requests. Please try again later.');
+      } else {
+        setError(err.message || 'Failed to send OTP');
+      }
     } finally {
       setLoading(false);
     }
@@ -47,16 +95,25 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
+
     try {
-      const res = await verifyOtp(phone, otp);
+      // 1. Verify OTP with Firebase
+      const result = await confirmationResult.confirm(otp);
+      const idToken = await result.user.getIdToken();
+
+      // 2. Login to our backend with the Firebase Token
+      const res = await firebaseLogin(idToken, mode === 'signup' ? name : undefined);
+      
       login(res.data.token, res.data.user);
+      
       if (res.data.user.role === 'admin') {
         router.push('/admin');
       } else {
         router.push('/dashboard');
       }
     } catch (err) {
-      setError(err.message);
+      console.error('Verification Error:', err);
+      setError(err.message || 'Verification failed. Try again.');
     } finally {
       setLoading(false);
     }
@@ -66,18 +123,20 @@ export default function LoginPage() {
     setMode(mode === 'login' ? 'signup' : 'login');
     setError('');
     setStep('phone');
+    setName('');
+    setPhone('');
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-[#080b16]">
+      <div id="recaptcha-container"></div>
+      
       <div className="w-full max-w-md">
         <div className="glass-card text-center relative overflow-hidden">
-          {/* Decorative Glow */}
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-indigo-500/10 blur-[80px]" />
           <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-purple-500/10 blur-[80px]" />
 
           <div className="relative z-10">
-            {/* Header */}
             <div className="mb-8">
               <div className="text-5xl mb-4 animate-bounce-slow">📚</div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
@@ -110,20 +169,23 @@ export default function LoginPage() {
                 
                 <div className="space-y-2">
                   <label className="block text-[11px] text-slate-500 uppercase tracking-wider font-bold ml-1">Phone Number</label>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+919876543210"
-                    className="input-glass"
-                    required
-                  />
+                  <div className="relative flex items-center">
+                    <span className="absolute left-4 text-slate-400 text-sm font-semibold pointer-events-none">+91</span>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                      placeholder="9876543210"
+                      className="input-glass !pl-12"
+                      required
+                    />
+                  </div>
                 </div>
 
                 <button type="submit" className="btn-primary w-full py-3.5 text-sm font-bold shadow-xl shadow-indigo-500/20" disabled={loading}>
                   {loading ? (
                     <span className="flex items-center justify-center gap-2">
-                      <span className="spinner !w-4 !h-4 !border-2" /> Sending OTP...
+                      <span className="spinner !w-4 !h-4 !border-2" /> Initializing...
                     </span>
                   ) : (
                     mode === 'login' ? 'Continue to Login' : 'Create Account'

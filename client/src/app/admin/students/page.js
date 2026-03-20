@@ -14,7 +14,7 @@ export default function StudentsPage() {
   // Add Student State
   const [showAddModal, setShowAddModal] = useState(false);
   const [newName, setNewName] = useState('');
-  const [newPhone, setNewPhone] = useState('+91');
+  const [newPhone, setNewPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
 
@@ -42,13 +42,19 @@ export default function StudentsPage() {
   async function handleAddStudent(e) {
     e.preventDefault();
     setModalError('');
+
+    if (!/^\d{10}$/.test(newPhone)) {
+      setModalError('Please enter a valid 10-digit phone number');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      await createStudent({ name: newName, phone: newPhone });
+      await createStudent({ name: newName, phone: `+91${newPhone}` });
       setShowAddModal(false);
       setNewName('');
-      setNewPhone('+91');
+      setNewPhone('');
       loadStudents();
     } catch (err) {
       setModalError(err.message);
@@ -179,14 +185,17 @@ export default function StudentsPage() {
               </div>
               <div>
                 <label className="block text-[11px] text-slate-500 uppercase tracking-wider font-semibold mb-1.5 ml-1">Phone Number</label>
-                <input
-                  type="tel"
-                  required
-                  value={newPhone}
-                  onChange={(e) => setNewPhone(e.target.value)}
-                  placeholder="+919988776655"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:border-indigo-500/50 outline-none transition-all"
-                />
+                <div className="relative flex items-center">
+                  <span className="absolute left-4 text-slate-400 text-sm font-semibold pointer-events-none">+91</span>
+                  <input
+                    type="tel"
+                    required
+                    value={newPhone}
+                    onChange={(e) => setNewPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                    placeholder="9988776655"
+                    className="w-full pl-12 pr-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:border-indigo-500/50 outline-none transition-all"
+                  />
+                </div>
               </div>
 
               <div className="pt-2">
