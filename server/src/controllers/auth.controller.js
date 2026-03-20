@@ -16,34 +16,46 @@ function generateOTP() {
 exports.sendOtp = async (req, res) => {
   try {
     const { phone, name } = req.body;
+    console.log(`📩 OTP Request for ${phone}, Name: ${name || 'NOT_PROVIDED'}`);
 
     let user = await User.findOne({ phone });
 
+    // ── CASE: Login Attempt (No name provided) ──
+    if (!name) {
+      if (!user) {
+        return error(res, 'No account found with this phone number. Please sign up first.', 404);
+      }
+    } 
+    // ── CASE: Sign Up Attempt (Name provided) ──
+    else {
+      if (user) {
+        return error(res, 'This phone number is already registered. Please login instead.', 400);
+      }
+      // Create the user for signup
+      user = await User.create({
+        name,
+        phone,
+        role: 'student',
+        isActive: true,
+      });
+    }
+
+    // ── Send OTP ──
     const otp = generateOTP();
     const otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 min
 
-    if (user) {
-      user.otp = otp;
-      user.otpExpiresAt = otpExpiresAt;
-      await user.save();
-    } else {
-      // Auto-register on first OTP request
-      user = await User.create({
-        name: name || 'New Student',
-        phone,
-        otp,
-        otpExpiresAt,
-      });
-    }
+    user.otp = otp;
+    user.otpExpiresAt = otpExpiresAt;
+    await user.save();
 
     // In production: send OTP via Twilio/WhatsApp
     // For dev, we log it
     console.log(`🔑 OTP for ${phone}: ${otp}`);
 
-    return success(res, { phone, isNew: !user }, 'OTP sent successfully');
+    return success(res, { phone, isNew: !name }, 'OTP sent successfully');
   } catch (err) {
     console.error('sendOtp error:', err);
-    return error(res, 'Failed to send OTP', 500);
+    return error(res, err.message || 'Failed to send OTP', 500);
   }
 };
 
