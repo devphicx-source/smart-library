@@ -4,10 +4,12 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { getLeaderboard } from '@/lib/api';
+import { useLanguage } from '@/lib/language-context';
 
 export default function StudentLeaderboard() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { t } = useLanguage();
   const [data, setData] = useState([]);
   const [myRank, setMyRank] = useState(null);
 
@@ -56,7 +58,7 @@ export default function StudentLeaderboard() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h1 className="text-sm font-bold">🏅 Leaderboard</h1>
+          <h1 className="text-sm font-bold">🏅 {t('leaderboard_title')}</h1>
         </div>
       </header>
 
@@ -84,7 +86,7 @@ export default function StudentLeaderboard() {
                   </div>
                   <p className={`font-semibold truncate ${entry.rank === 1 ? 'text-[var(--text-primary)] text-[14px]' : 'text-[var(--text-secondary)] text-[13px]'}`}>
                     {entry.name}
-                    {isMe && <span className="text-indigo-400 text-[10px] ml-1">(You)</span>}
+                    {isMe && <span className="text-indigo-400 text-[10px] ml-1">{t('you')}</span>}
                   </p>
                   <div className="flex items-center justify-center gap-2 mt-2 text-xs">
                     <span className="text-amber-500 font-bold">🔥 {entry.currentStreak}</span>
@@ -119,7 +121,7 @@ export default function StudentLeaderboard() {
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-medium truncate">
                       {entry.name}
-                      {isMe && <span className="text-indigo-400 text-[10px] ml-1">(You)</span>}
+                      {isMe && <span className="text-indigo-400 text-[10px] ml-1">{t('you')}</span>}
                     </p>
                   </div>
                   <span className="text-[12px] text-amber-400 font-semibold">🔥 {entry.currentStreak}</span>
@@ -133,7 +135,7 @@ export default function StudentLeaderboard() {
         {data.length === 0 && (
           <div className="text-center py-16">
             <div className="text-3xl mb-2">🏅</div>
-            <p className="text-[var(--text-secondary)] text-sm">No leaderboard data yet</p>
+            <p className="text-[var(--text-secondary)] text-sm">{t('no_leaderboard_data')}</p>
           </div>
         )}
       </div>
@@ -150,20 +152,20 @@ export default function StudentLeaderboard() {
             <div className="flex-1 min-w-0">
               <p className="text-[13px] font-semibold truncate">
                 {myRank.name}
-                <span className="text-indigo-400 text-[10px] ml-1.5 font-medium">Your Rank</span>
+                <span className="text-indigo-400 text-[10px] ml-1.5 font-medium">{t('your_rank')}</span>
               </p>
               <p className="text-[10px] text-[var(--text-secondary)]">
-                Best streak: {myRank.longestStreak || myRank.currentStreak} days
+                {t('best_streak')}: {myRank.longestStreak || myRank.currentStreak} {t('days')}
               </p>
             </div>
             <div className="flex items-center gap-3">
               <div className="text-center">
                 <p className="text-[14px] font-bold text-amber-500">🔥 {myRank.currentStreak}</p>
-                <p className="text-[9px] text-[var(--text-secondary)] uppercase font-semibold">Streak</p>
+                <p className="text-[9px] text-[var(--text-secondary)] uppercase font-semibold">{t('streak')}</p>
               </div>
               <div className="text-center pl-3 border-l border-[var(--card-border)]">
                 <p className="text-[14px] font-bold">{myRank.totalStudyHours}h</p>
-                <p className="text-[9px] text-[var(--text-secondary)] uppercase font-semibold">Total</p>
+                <p className="text-[9px] text-[var(--text-secondary)] uppercase font-semibold">{t('total')}</p>
               </div>
             </div>
           </div>

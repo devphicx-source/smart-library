@@ -6,6 +6,8 @@ import { firebaseLogin, getMe, checkUser } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { auth } from '@/lib/firebase';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
+import { useLanguage } from '@/lib/language-context';
+import LanguageToggle from '@/components/LanguageToggle';
 
 export default function LoginPage() {
   const [phone, setPhone] = useState('');
@@ -19,6 +21,7 @@ export default function LoginPage() {
   
   const router = useRouter();
   const { login } = useAuth();
+  const { t } = useLanguage();
 
   // Initialize reCAPTCHA
   useEffect(() => {
@@ -130,6 +133,9 @@ export default function LoginPage() {
   return (
     <div className="dark">
       <div className="min-h-screen flex items-center justify-center px-4 bg-[var(--bg-primary)] text-[var(--text-primary)] relative">
+        <div className="absolute top-4 right-4 z-50">
+          <LanguageToggle />
+        </div>
         <div id="recaptcha-container"></div>
         
         <div className="w-full max-w-md">
@@ -141,9 +147,9 @@ export default function LoginPage() {
               <div className="mb-8">
                 <div className="text-5xl mb-4 animate-bounce-slow">📚</div>
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-                  SLMS
+                  {t('slms_title')}
                 </h1>
-                <p className="text-[var(--text-secondary)] mt-2 text-sm">Smart Library Management System</p>
+                <p className="text-[var(--text-secondary)] mt-2 text-sm">{t('slms_subtitle')}</p>
               </div>
   
               {error && (
@@ -156,7 +162,7 @@ export default function LoginPage() {
                 <form onSubmit={handleSendOtp} className="space-y-5 text-left">
                   {mode === 'signup' && (
                     <div className="space-y-2 animate-in fade-in slide-in-from-top-4 duration-500">
-                      <label className="block text-[11px] text-[var(--text-secondary)] uppercase tracking-wider font-bold ml-1">Full Name</label>
+                      <label className="block text-[11px] text-[var(--text-secondary)] uppercase tracking-wider font-bold ml-1">{t('full_name')}</label>
                       <input
                         type="text"
                         value={name}
@@ -169,7 +175,7 @@ export default function LoginPage() {
                   )}
                   
                   <div className="space-y-2">
-                    <label className="block text-[11px] text-[var(--text-secondary)] uppercase tracking-wider font-bold ml-1">Phone Number</label>
+                    <label className="block text-[11px] text-[var(--text-secondary)] uppercase tracking-wider font-bold ml-1">{t('phone_number')}</label>
                     <div className="relative flex items-center">
                       <span className="absolute left-4 text-[var(--text-secondary)] text-sm font-semibold pointer-events-none">+91</span>
                       <input
@@ -186,10 +192,10 @@ export default function LoginPage() {
                   <button type="submit" className="btn-primary w-full py-3.5 text-sm font-bold shadow-xl shadow-indigo-500/20" disabled={loading}>
                     {loading ? (
                       <span className="flex items-center justify-center gap-2">
-                        <span className="spinner !w-4 !h-4 !border-2" /> Initializing...
+                        <span className="spinner !w-4 !h-4 !border-2" /> {t('loading')}
                       </span>
                     ) : (
-                      mode === 'login' ? 'Continue to Login' : 'Create Account'
+                      mode === 'login' ? t('continue_to_login') : t('create_account')
                     )}
                   </button>
   
@@ -200,9 +206,9 @@ export default function LoginPage() {
                       className="text-[13px] text-[var(--text-secondary)] hover:text-indigo-400 transition-colors"
                     >
                       {mode === 'login' ? (
-                        <>Don&apos;t have an account? <span className="text-indigo-400 font-bold">Sign Up</span></>
+                        <>{t('no_account')} <span className="text-indigo-400 font-bold">{t('signup')}</span></>
                       ) : (
-                        <>Already have an account? <span className="text-indigo-400 font-bold">Log In</span></>
+                        <>{t('already_account')} <span className="text-indigo-400 font-bold">{t('login')}</span></>
                       )}
                     </button>
                   </div>
@@ -210,7 +216,7 @@ export default function LoginPage() {
               ) : (
                 <form onSubmit={handleVerifyOtp} className="space-y-6 text-left animate-in fade-in zoom-in-95 duration-300">
                   <div className="space-y-3">
-                    <label className="block text-[11px] text-[var(--text-secondary)] uppercase tracking-wider font-bold text-center">Enter Verification Code</label>
+                    <label className="block text-[11px] text-[var(--text-secondary)] uppercase tracking-wider font-bold text-center">{t('enter_otp')}</label>
                     <input
                       type="text"
                       value={otp}
@@ -229,10 +235,10 @@ export default function LoginPage() {
                   <button type="submit" className="btn-primary w-full py-4 text-sm font-bold shadow-xl shadow-indigo-500/25" disabled={loading}>
                     {loading ? (
                       <span className="flex items-center justify-center gap-2">
-                        <span className="spinner !w-4 !h-4 !border-2" /> Verifying...
+                        <span className="spinner !w-4 !h-4 !border-2" /> {t('loading')}
                       </span>
                     ) : (
-                      'Verify & Enter'
+                      t('verify_enter')
                     )}
                   </button>
   
@@ -242,14 +248,14 @@ export default function LoginPage() {
                       onClick={() => { setStep('phone'); setOtp(''); setError(''); }}
                       className="text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                     >
-                      ← Back to {mode === 'login' ? 'Login' : 'Signup'}
+                      {mode === 'login' ? t('back_to_login') : t('back_to_signup')}
                     </button>
                   </div>
                 </form>
               )}
   
               <p className="mt-8 text-[10px] text-[var(--text-secondary)] opacity-60 leading-relaxed max-w-[240px] mx-auto">
-                By continuing, you agree to our Terms of Service and Privacy Policy.
+                {t('terms_privacy')}
               </p>
             </div>
           </div>

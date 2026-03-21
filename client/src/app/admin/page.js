@@ -11,9 +11,11 @@ import {
   updateFee,
 } from '@/lib/api';
 import { formatTime } from '@/lib/utils';
+import { useLanguage } from '@/lib/language-context';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [stats, setStats] = useState(null);
   const [occupancy, setOccupancy] = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
@@ -66,7 +68,7 @@ export default function AdminDashboard() {
   const activeSessions = occupancy.occupied;
   const kpis = [
     {
-      label: 'Students Today',
+      label: t('students_today'),
       value: stats.uniqueStudents || 0,
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,7 +79,7 @@ export default function AdminDashboard() {
       glow: 'shadow-blue-500/20',
     },
     {
-      label: 'Active Sessions',
+      label: t('active_sessions'),
       value: activeSessions,
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,7 +90,7 @@ export default function AdminDashboard() {
       glow: 'shadow-emerald-500/20',
     },
     {
-      label: 'Study Hours',
+      label: t('study_hours'),
       value: stats.totalHours || 0,
       suffix: 'h',
       icon: (
@@ -100,7 +102,7 @@ export default function AdminDashboard() {
       glow: 'shadow-amber-500/20',
     },
     {
-      label: 'Desk Occupancy',
+      label: t('desk_occupancy'),
       value: `${occupancy.occupied}/${occupancy.total}`,
       sub: `${occupancy.occupancyRate}%`,
       icon: (
@@ -145,7 +147,7 @@ export default function AdminDashboard() {
               {kpi.label}
             </div>
             {kpi.sub && (
-              <div className="text-xs text-indigo-400 mt-1 font-semibold">{kpi.sub} utilized</div>
+              <div className="text-xs text-indigo-400 mt-1 font-semibold">{kpi.sub} {t('utilized')}</div>
             )}
           </div>
         ))}
@@ -156,13 +158,13 @@ export default function AdminDashboard() {
         {/* Desk Grid */}
         <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold">Live Occupancy</h3>
+            <h3 className="text-sm font-semibold">{t('live_occupancy')}</h3>
             <div className="flex items-center gap-4 text-[11px] text-[var(--text-secondary)]">
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500/30 border border-emerald-500/50" /> Available
+                <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500/30 border border-emerald-500/50" /> {t('available')}
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-sm bg-red-500/30 border border-red-500/50" /> Occupied
+                <span className="w-2.5 h-2.5 rounded-sm bg-red-500/30 border border-red-500/50" /> {t('occupied')}
               </span>
             </div>
           </div>
@@ -196,7 +198,7 @@ export default function AdminDashboard() {
 
         {/* Leaderboard */}
         <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5">
-          <h3 className="text-sm font-semibold mb-4">🏅 Top 5 Leaderboard</h3>
+          <h3 className="text-sm font-semibold mb-4">🏅 {t('top_5_leaderboard')}</h3>
           <div className="space-y-2">
             {leaderboard.map((entry, i) => (
               <div
@@ -225,7 +227,7 @@ export default function AdminDashboard() {
               </div>
             ))}
             {leaderboard.length === 0 && (
-              <p className="text-center text-[var(--text-secondary)] text-xs py-8">No data yet</p>
+              <p className="text-center text-[var(--text-secondary)] text-xs py-8">{t('no_data')}</p>
             )}
           </div>
         </div>
@@ -236,9 +238,9 @@ export default function AdminDashboard() {
         {/* Pending Fees */}
         <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold">💰 Pending Fees</h3>
+            <h3 className="text-sm font-semibold">💰 {t('pending_fees')}</h3>
             <a href="/admin/fees" className="text-[11px] text-indigo-400 hover:text-indigo-300 font-medium">
-              View All →
+              {t('view_all')}
             </a>
           </div>
           <div className="space-y-2">
@@ -254,7 +256,7 @@ export default function AdminDashboard() {
                   <div className="min-w-0">
                     <p className="text-[13px] font-medium truncate">{fee.user?.name || '—'}</p>
                     <p className="text-[11px] text-[var(--text-secondary)] font-medium">
-                      Due {new Date(fee.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' })}
+                      {t('due')} {new Date(fee.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' })}
                       <span className="mx-1.5">·</span>
                       <span className="capitalize">{fee.type}</span>
                     </p>
@@ -268,14 +270,14 @@ export default function AdminDashboard() {
                       bg-emerald-500/10 border border-emerald-500/30 text-emerald-500
                       text-[11px] font-semibold hover:bg-emerald-500/20 transition-all"
                   >
-                    ✓ Paid
+                    ✓ {t('paid_mark')}
                   </button>
                 </div>
               </div>
             ))}
             {fees.length === 0 && (
               <div className="text-center py-8">
-                <p className="text-[var(--text-secondary)] text-xs font-medium">No pending fees 🎉</p>
+                <p className="text-[var(--text-secondary)] text-xs font-medium">{t('no_pending_fees')}</p>
               </div>
             )}
           </div>
@@ -283,7 +285,7 @@ export default function AdminDashboard() {
 
         {/* Recent Activity */}
         <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5">
-          <h3 className="text-sm font-semibold mb-4">⚡ Recent Activity</h3>
+          <h3 className="text-sm font-semibold mb-4">⚡ {t('recent_activity')}</h3>
           <div className="space-y-1">
             {activity.map((a, i) => (
               <div
@@ -300,7 +302,7 @@ export default function AdminDashboard() {
               </div>
             ))}
             {activity.length === 0 && (
-              <p className="text-center text-[var(--text-secondary)] text-xs py-8">No activity yet</p>
+              <p className="text-center text-[var(--text-secondary)] text-xs py-8">{t('no_activity')}</p>
             )}
           </div>
         </div>

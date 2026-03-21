@@ -3,9 +3,11 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/lib/auth';
 import { getAllStudents, createStudent } from '@/lib/api';
+import { useLanguage } from '@/lib/language-context';
 
 export default function StudentsPage() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [students, setStudents] = useState([]);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
@@ -44,7 +46,7 @@ export default function StudentsPage() {
     setModalError('');
 
     if (!/^\d{10}$/.test(newPhone)) {
-      setModalError('Please enter a valid 10-digit phone number');
+      setModalError(t('invalid_phone'));
       return;
     }
 
@@ -76,21 +78,21 @@ export default function StudentsPage() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name or phone..."
+              placeholder={t('search_placeholder')}
               className="w-full pl-10 pr-4 py-2 rounded-xl text-[13px]
                 bg-[var(--card-bg)] border border-[var(--card-border)] text-[var(--text-primary)]
                 placeholder-[var(--text-secondary)] outline-none focus:border-indigo-500/40
                 transition-all"
             />
           </div>
-          <span className="text-[11px] text-[var(--text-secondary)] font-medium">{total} students</span>
+          <span className="text-[11px] text-[var(--text-secondary)] font-medium">{total} {t('students')}</span>
         </div>
         
         <button
           onClick={() => setShowAddModal(true)}
           className="px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-[12px] font-bold transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/20"
         >
-          <span>＋</span> Add Student
+          <span>＋</span> {t('add_student')}
         </button>
       </div>
 
@@ -99,12 +101,12 @@ export default function StudentsPage() {
         <table className="w-full text-[13px]">
           <thead>
             <tr className="text-[11px] text-[var(--text-secondary)] uppercase tracking-wider border-b border-[var(--card-border)]">
-              <th className="text-left py-3 px-4 font-medium">Student</th>
-              <th className="text-center py-3 px-4 font-medium">Streak</th>
-              <th className="text-center py-3 px-4 font-medium">Best Streak</th>
-              <th className="text-center py-3 px-4 font-medium">Study Hours</th>
-              <th className="text-center py-3 px-4 font-medium">Status</th>
-              <th className="text-center py-3 px-4 font-medium">Last Active</th>
+              <th className="text-left py-3 px-4 font-medium">{t('student_label')}</th>
+              <th className="text-center py-3 px-4 font-medium">{t('streak')}</th>
+              <th className="text-center py-3 px-4 font-medium">{t('best_streak')}</th>
+              <th className="text-center py-3 px-4 font-medium">{t('study_hours')}</th>
+              <th className="text-center py-3 px-4 font-medium">{t('status')}</th>
+              <th className="text-center py-3 px-4 font-medium">{t('last_active')}</th>
             </tr>
           </thead>
           <tbody>
@@ -138,7 +140,7 @@ export default function StudentsPage() {
                       : 'bg-[var(--card-border)]/5 text-[var(--text-secondary)] border border-[var(--card-border)]/30'
                     }
                   `}>
-                    {s.isActive ? 'Active' : 'Inactive'}
+                    {s.isActive ? t('active') : t('inactive')}
                   </span>
                 </td>
                 <td className="py-3 px-4 text-center text-[12px] text-[var(--text-secondary)]">
@@ -150,7 +152,7 @@ export default function StudentsPage() {
               </tr>
             ))}
             {students.length === 0 && (
-              <tr><td colSpan={6} className="text-center py-12 text-[var(--text-secondary)] text-xs">No students found</td></tr>
+              <tr><td colSpan={6} className="text-center py-12 text-[var(--text-secondary)] text-xs">{t('no_students_found')}</td></tr>
             )}
           </tbody>
         </table>
@@ -161,7 +163,7 @@ export default function StudentsPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="w-full max-w-sm rounded-2xl bg-[var(--bg-primary)] border border-[var(--card-border)] p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold">Add New Student</h2>
+              <h2 className="text-lg font-bold">{t('add_new_student')}</h2>
               <button onClick={() => setShowAddModal(false)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">✕</button>
             </div>
 
@@ -173,7 +175,7 @@ export default function StudentsPage() {
 
             <form onSubmit={handleAddStudent} className="space-y-4">
               <div>
-                <label className="block text-[11px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold mb-1.5 ml-1">Full Name</label>
+                <label className="block text-[11px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold mb-1.5 ml-1">{t('full_name')}</label>
                 <input
                   type="text"
                   required
@@ -184,7 +186,7 @@ export default function StudentsPage() {
                 />
               </div>
               <div>
-                <label className="block text-[11px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold mb-1.5 ml-1">Phone Number</label>
+                <label className="block text-[11px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold mb-1.5 ml-1">{t('phone_number')}</label>
                 <div className="relative flex items-center">
                   <span className="absolute left-4 text-[var(--text-secondary)] text-sm font-semibold pointer-events-none">+91</span>
                   <input
@@ -204,7 +206,7 @@ export default function StudentsPage() {
                   disabled={isSubmitting}
                   className="w-full py-3 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold transition-all disabled:opacity-50 shadow-lg shadow-indigo-500/20"
                 >
-                  {isSubmitting ? 'Creating...' : 'Create Student'}
+                  {isSubmitting ? t('creating') : t('create_student')}
                 </button>
               </div>
             </form>

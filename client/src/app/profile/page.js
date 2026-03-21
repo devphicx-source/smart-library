@@ -6,10 +6,13 @@ import { useAuth } from '@/lib/auth';
 import { getLeaderboard, getActiveSession, checkOut } from '@/lib/api';
 import { formatDuration } from '@/lib/utils';
 import ThemeToggle from '@/components/ThemeToggle';
+import LanguageToggle from '@/components/LanguageToggle';
+import { useLanguage } from '@/lib/language-context';
 
 export default function ProfilePage() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const { t } = useLanguage();
   const [myRank, setMyRank] = useState(null);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [hasActiveSession, setHasActiveSession] = useState(false);
@@ -65,10 +68,10 @@ export default function ProfilePage() {
     : '—';
 
   const stats = [
-    { label: 'Rank', value: myRank ? `#${myRank.rank}` : '—', icon: '🏅' },
-    { label: 'Streak', value: `${user.currentStreak || 0} days`, icon: '🔥' },
-    { label: 'Best Streak', value: `${user.longestStreak || 0} days`, icon: '⭐' },
-    { label: 'Total Study', value: formatDuration(user.totalStudyMinutes || 0), icon: '📚' },
+    { label: t('rank'), value: myRank ? `#${myRank.rank}` : '—', icon: '🏅' },
+    { label: t('streak'), value: `${user.currentStreak || 0} ${t('days') || 'days'}`, icon: '🔥' },
+    { label: t('best_streak') || 'Best Streak', value: `${user.longestStreak || 0} ${t('days') || 'days'}`, icon: '⭐' },
+    { label: t('total_study') || 'Total Study', value: formatDuration(user.totalStudyMinutes || 0), icon: '📚' },
   ];
 
   return (
@@ -85,9 +88,12 @@ export default function ProfilePage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <h1 className="text-sm font-bold">Profile</h1>
+            <h1 className="text-sm font-bold">{t('profile')}</h1>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <LanguageToggle />
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
@@ -120,7 +126,7 @@ export default function ProfilePage() {
             )}
           </div>
 
-          <p className="text-[11px] text-[var(--text-secondary)] mt-3 opacity-60">Member since {joinDate}</p>
+          <p className="text-[11px] text-[var(--text-secondary)] mt-3 opacity-60">{t('member_since')} {joinDate}</p>
         </div>
 
         {/* ═══ Stats Grid ═══ */}
@@ -142,7 +148,7 @@ export default function ProfilePage() {
               bg-[var(--card-bg)] border border-[var(--card-border)] text-[var(--text-primary)]
               hover:bg-[var(--card-border)]/50 transition-all"
           >
-            🏅 View Full Leaderboard
+            🏅 {t('view_leaderboard') || 'View Full Leaderboard'}
           </button>
 
           <button
@@ -154,7 +160,7 @@ export default function ProfilePage() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
-            Logout
+            {t('logout')}
           </button>
         </div>
       </div>
@@ -168,11 +174,11 @@ export default function ProfilePage() {
               ⚠️
             </div>
 
-            <h2 className="text-[15px] font-bold mb-2">Active Session Detected</h2>
+            <h2 className="text-[15px] font-bold mb-2">{t('active_session_detected') || 'Active Session Detected'}</h2>
             <p className="text-[12px] text-[var(--text-secondary)] leading-relaxed mb-5">
-              You have an ongoing study session. Logging out will <span className="text-amber-500 font-semibold">automatically end your session</span> and save your progress.
+              {t('logout_active_session_msg') || 'You have an ongoing study session. Logging out will automatically end your session and save your progress.'}
             </p>
-            <p className="text-[11px] text-[var(--text-secondary)] opacity-60 mb-5">Are you sure you want to logout?</p>
+            <p className="text-[11px] text-[var(--text-secondary)] opacity-60 mb-5">{t('confirm_logout_msg') || 'Are you sure you want to logout?'}</p>
 
             <div className="flex gap-3">
               <button
@@ -181,7 +187,7 @@ export default function ProfilePage() {
                   bg-[var(--bg-secondary)] border border-[var(--card-border)] text-[var(--text-secondary)]
                   hover:bg-[var(--card-border)]/50 transition-all"
               >
-                Cancel
+                {t('cancel')}
               </button>
               <button
                 onClick={confirmLogout}
@@ -191,7 +197,7 @@ export default function ProfilePage() {
                   hover:shadow-lg hover:shadow-red-500/25 transition-all
                   disabled:opacity-50"
               >
-                {logoutLoading ? 'Ending session...' : 'Yes, Logout'}
+                {logoutLoading ? t('loading') : t('confirm_logout') || 'Yes, Logout'}
               </button>
             </div>
           </div>

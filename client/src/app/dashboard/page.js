@@ -17,10 +17,12 @@ import {
   endBreak,
 } from '@/lib/api';
 import { formatDuration } from '@/lib/utils';
+import { useLanguage } from '@/lib/language-context';
 
 export default function Dashboard() {
   const { user, loading: authLoading, logout } = useAuth();
   const router = useRouter();
+  const { t: trans } = useLanguage();
 
   // ── State ──
   const [session, setSession] = useState(null);
@@ -189,9 +191,9 @@ export default function Dashboard() {
   // ── Helpers ──
   function greeting() {
     const h = new Date().getHours();
-    if (h < 12) return 'Good Morning';
-    if (h < 17) return 'Good Afternoon';
-    return 'Good Evening';
+    if (h < 12) return trans('good_morning');
+    if (h < 17) return trans('good_afternoon');
+    return trans('good_evening');
   }
 
   function fmtTimer(secs) {
@@ -233,13 +235,13 @@ export default function Dashboard() {
             <h1 className="text-[15px] font-bold">
               {greeting()}, {user.name?.split(' ')[0]} 👋
             </h1>
-            <p className="text-[11px] text-[var(--text-secondary)]">Let&apos;s build your streak today 🔥</p>
+            <p className="text-[11px] text-[var(--text-secondary)]">{trans('build_streak_msg')} 🔥</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
               <span className="text-sm">🔥</span>
               <span className="text-[13px] font-bold text-amber-400">{user.currentStreak || 0}</span>
-              <span className="text-[10px] text-amber-500/60">days</span>
+              <span className="text-[10px] text-amber-500/60">{trans('days')}</span>
             </div>
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-[11px] font-bold cursor-pointer
                 hover:ring-2 hover:ring-indigo-400/50 transition-all"
@@ -272,7 +274,7 @@ export default function Dashboard() {
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 mb-4">
                   <span className={`w-2 h-2 rounded-full ${session.status === 'on-break' ? 'bg-amber-400' : 'bg-emerald-400 animate-pulse'}`} />
                   <span className={`text-[11px] font-semibold uppercase tracking-wider ${session.status === 'on-break' ? 'text-amber-400' : 'text-emerald-400'}`}>
-                    {session.status === 'on-break' ? 'Session on Break' : 'Session Active'}
+                    {session.status === 'on-break' ? trans('session_on_break') : trans('session_active')}
                   </span>
                 </div>
 
@@ -301,7 +303,7 @@ export default function Dashboard() {
                         bg-amber-500/10 border border-amber-500/30 text-amber-500
                         hover:bg-amber-500/20 transition-all disabled:opacity-50"
                     >
-                      ☕ Take a Break
+                      {trans('take_break')}
                     </button>
                   ) : (
                     <button
@@ -311,7 +313,7 @@ export default function Dashboard() {
                         bg-emerald-500/10 border border-emerald-500/30 text-emerald-500
                         hover:bg-emerald-500/20 transition-all disabled:opacity-50"
                     >
-                      ▶ Resume Session
+                      {trans('resume_session')}
                     </button>
                   )}
 
@@ -322,15 +324,15 @@ export default function Dashboard() {
                       bg-gradient-to-r from-red-500 to-red-600 text-white
                       hover:shadow-xl hover:shadow-red-500/25 transition-all disabled:opacity-50"
                   >
-                    {actionLoading ? 'Ending...' : '⏹ End Session'}
+                    {actionLoading ? trans('ending') : trans('end_session')}
                   </button>
                 </div>
               </>
             ) : (
               <>
                 <div className="text-3xl mb-3">📚</div>
-                <h2 className="text-lg font-bold mb-1">Ready to study?</h2>
-                <p className="text-[12px] text-[var(--text-secondary)] mb-5">Pick a desk and start your session</p>
+                <h2 className="text-lg font-bold mb-1">{trans('ready_to_study')}</h2>
+                <p className="text-[12px] text-[var(--text-secondary)] mb-5">{trans('pick_desk_msg')}</p>
                 <button
                   onClick={openDeskPicker}
                   className="px-8 py-3.5 rounded-2xl text-sm font-bold
@@ -339,7 +341,7 @@ export default function Dashboard() {
                     transition-all relative group"
                 >
                   <span className="absolute inset-0 rounded-2xl bg-emerald-400/20 blur-xl group-hover:blur-2xl transition-all opacity-0 group-hover:opacity-100" />
-                  <span className="relative">▶ Start Session</span>
+                  <span className="relative">{trans('start_session')}</span>
                 </button>
               </>
             )}
@@ -367,24 +369,24 @@ export default function Dashboard() {
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-2xl font-bold text-amber-400">{user.currentStreak || 0}</span>
-                <span className="text-[9px] text-[var(--text-secondary)] uppercase tracking-wider">days</span>
+                <span className="text-[9px] text-[var(--text-secondary)] uppercase tracking-wider">{trans('days')}</span>
               </div>
             </div>
-            <p className="text-[13px] font-semibold text-[var(--text-primary)]">🔥 Current Streak</p>
-            <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">Best: {user.longestStreak || 0} days</p>
+            <p className="text-[13px] font-semibold text-[var(--text-primary)]">🔥 {trans('streak')}</p>
+            <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">{trans('best_streak')}: {user.longestStreak || 0} {trans('days')}</p>
           </div>
 
           {/* Today's Progress */}
           <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5 flex flex-col justify-between">
             <div>
-              <p className="text-[11px] text-[var(--text-secondary)] uppercase tracking-wider font-medium mb-1">Today&apos;s Study</p>
+              <p className="text-[11px] text-[var(--text-secondary)] uppercase tracking-wider font-medium mb-1">{trans('todays_study')}</p>
               <p className="text-2xl font-bold">
                 {formatDuration(user.totalStudyMinutes || 0)}
               </p>
             </div>
             <div className="mt-4">
               <div className="flex items-center justify-between mb-1.5">
-                <p className="text-[11px] text-[var(--text-secondary)]">Weekly Goal</p>
+                <p className="text-[11px] text-[var(--text-secondary)]">{trans('weekly_goal')}</p>
                 <p className="text-[11px] font-semibold text-indigo-400">{totalWeeklyHours}h / {weeklyGoal}h</p>
               </div>
               <div className="w-full bg-[var(--card-border)] rounded-full h-2">
@@ -399,7 +401,7 @@ export default function Dashboard() {
 
         {/* ═══ SECTION 3: WEEKLY CHART ═══ */}
         <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5">
-          <h3 className="text-sm font-semibold mb-4">📈 This Week</h3>
+          <h3 className="text-sm font-semibold mb-4">📈 {trans('this_week')}</h3>
           <div className="flex items-end gap-2 h-28">
             {(weeklyData.length > 0 ? weeklyData : Array.from({ length: 7 }, (_, i) => ({ day: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][i], minutes: 0 }))).map((day, i) => {
               const hrs = +((day.minutes || 0) / 60).toFixed(1);
@@ -425,11 +427,11 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center gap-6 mt-4 pt-3 border-t border-[var(--card-border)]">
             <div>
-              <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider">Avg Daily</p>
+              <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider">{trans('avg_daily')}</p>
               <p className="text-sm font-bold">{avgDaily}h</p>
             </div>
             <div>
-              <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider">Best Day</p>
+              <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider">{trans('best_day')}</p>
               <p className="text-sm font-bold">
                 {bestDay?.day || '—'} ({+((bestDay?.minutes || 0) / 60).toFixed(1)}h)
               </p>
@@ -441,7 +443,7 @@ export default function Dashboard() {
         <div className="grid lg:grid-cols-2 gap-4">
           {/* Leaderboard */}
           <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5 flex flex-col">
-            <h3 className="text-sm font-semibold mb-3">🏅 Leaderboard</h3>
+            <h3 className="text-sm font-semibold mb-3">🏅 {trans('leaderboard_title')}</h3>
             <div className="space-y-1.5 flex-1">
               {leaderboard.map((entry) => {
                 const isMe = entry.userId === user._id;
@@ -473,7 +475,7 @@ export default function Dashboard() {
               className="mt-3 pt-3 border-t border-white/[0.03] flex items-center justify-end gap-1
                 text-[11px] text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
             >
-              View All →
+              {trans('view_all')}
             </a>
           </div>
 
@@ -481,7 +483,7 @@ export default function Dashboard() {
           {/* Fees */}
           <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5 flex flex-col justify-between">
             <div>
-              <h3 className="text-sm font-semibold mb-3">💰 Fee Status</h3>
+              <h3 className="text-sm font-semibold mb-3">💰 {trans('fee_status')}</h3>
               {pendingFee ? (
                 <div>
                   <div className="flex items-center gap-2 mb-2">
@@ -498,21 +500,21 @@ export default function Dashboard() {
                   <p className="text-xl font-bold mb-1">₹{pendingFee.amount}</p>
                   <p className="text-[11px] text-[var(--text-secondary)] capitalize">{pendingFee.type} fee</p>
                   <p className="text-[11px] text-slate-500 mt-1">
-                    Due: {new Date(pendingFee.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}
+                    {t('due')} {new Date(pendingFee.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}
                   </p>
                   {lastPaidFee && (lastPaidFee.billingEndDate || lastPaidFee.dueDate) && (
                     <p className="text-[10px] text-emerald-500/80 font-medium mt-2 pt-2 border-t border-white/[0.03]">
-                      Fees Paid Till: {new Date(lastPaidFee.billingEndDate || lastPaidFee.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}
+                      {trans('fees_paid_till')}: {new Date(lastPaidFee.billingEndDate || lastPaidFee.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}
                     </p>
                   )}
                 </div>
               ) : (
                 <div className="text-center py-4">
                   <div className="text-2xl mb-2">✅</div>
-                  <p className="text-[12px] text-slate-400 font-semibold text-emerald-400">All fees paid!</p>
+                  <p className="text-[12px] text-slate-400 font-semibold text-emerald-400">{trans('all_fees_paid')}</p>
                   {lastPaidFee && (lastPaidFee.billingEndDate || lastPaidFee.dueDate) && (
                     <p className="text-[10px] text-slate-500 mt-1">
-                      Fees Paid Till: <span className="text-[var(--text-primary)] font-semibold">{new Date(lastPaidFee.billingEndDate || lastPaidFee.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}</span>
+                      {trans('fees_paid_till')}: <span className="text-[var(--text-primary)] font-semibold">{new Date(lastPaidFee.billingEndDate || lastPaidFee.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}</span>
                     </p>
                   )}
                   {!lastPaidFee && <p className="text-[10px] text-[var(--text-secondary)] mt-0.5">You&apos;re all caught up</p>}
@@ -530,7 +532,7 @@ export default function Dashboard() {
                   : 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/20'
                 }`}
               >
-                {actionLoading ? 'Processing...' : pendingFee.status === 'submitted' ? 'Payment Submitted' : 'Pay Now'}
+                {actionLoading ? trans('processing') : pendingFee.status === 'submitted' ? trans('payment_submitted') : trans('pay_now')}
               </button>
             )}
           </div>
@@ -542,7 +544,7 @@ export default function Dashboard() {
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="w-full max-w-lg rounded-2xl bg-[var(--bg-primary)] border border-[var(--card-border)] p-5 shadow-2xl max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-bold">Pick a Desk</h2>
+              <h2 className="text-sm font-bold">{trans('pick_desk')}</h2>
               <button onClick={() => setShowDeskPicker(false)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-lg">✕</button>
             </div>
             <div className="grid grid-cols-5 sm:grid-cols-6 gap-2">
@@ -564,8 +566,8 @@ export default function Dashboard() {
               ))}
             </div>
             <div className="flex gap-4 mt-3 text-[10px] text-slate-500">
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-emerald-500/30 border border-emerald-500/50" /> Available</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-red-500/30 border border-red-500/50" /> Occupied</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-emerald-500/30 border border-emerald-500/50" /> {trans('available')}</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-red-500/30 border border-red-500/50" /> {trans('occupied')}</span>
             </div>
           </div>
         </div>
@@ -577,7 +579,7 @@ export default function Dashboard() {
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-600" />
             
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-sm font-bold uppercase tracking-widest">Pay Fee</h2>
+              <h2 className="text-sm font-bold uppercase tracking-widest">{trans('pay_fee_title')}</h2>
               <button 
                 onClick={() => setShowPaymentModal(false)} 
                 className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
@@ -587,7 +589,7 @@ export default function Dashboard() {
 
             <div className="text-center space-y-4">
               <div className="p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--card-border)]">
-                <p className="text-[11px] text-[var(--text-secondary)] uppercase font-bold tracking-wider mb-1">Total Amount</p>
+                <p className="text-[11px] text-[var(--text-secondary)] uppercase font-bold tracking-wider mb-1">{trans('total_amount')}</p>
                 <p className="text-3xl font-black">₹{selectedFee.amount}</p>
               </div>
 
@@ -602,7 +604,7 @@ export default function Dashboard() {
 
               <div className="space-y-1">
                 <p className="text-[12px] font-bold">UPI ID: <span className="text-indigo-400">devphicx@upi</span></p>
-                <p className="text-[10px] text-[var(--text-secondary)]">Scan QR or use the ID to pay via any UPI app</p>
+                <p className="text-[10px] text-[var(--text-secondary)]">{trans('upi_scan_msg')}</p>
               </div>
 
               {/* Deep Link Button */}
@@ -610,14 +612,14 @@ export default function Dashboard() {
                 href={`upi://pay?pa=devphicx@upi&pn=SmartLibrary&am=${selectedFee.amount}&cu=INR&tn=Fee_${selectedFee._id}`}
                 className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-white text-black text-sm font-bold hover:bg-slate-200 transition-all"
               >
-                📱 Open UPI App
+                {trans('open_upi_app')}
               </a>
 
               <div className="pt-2 border-t border-white/[0.05] space-y-3 text-left">
-                <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">After Payment</p>
+                <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">{trans('after_payment')}</p>
                 <input 
                   type="text"
-                  placeholder="Enter Transaction ID (Optional)"
+                  placeholder={trans('txn_id_placeholder')}
                   id="txnIdInput"
                   className="w-full bg-[var(--bg-primary)] border border-[var(--card-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all"
                 />
@@ -626,7 +628,7 @@ export default function Dashboard() {
                   disabled={actionLoading}
                   className="w-full py-3 rounded-2xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-500/20"
                 >
-                  {actionLoading ? 'Submitting...' : '✅ I have paid'}
+                  {actionLoading ? trans('processing') : trans('i_have_paid')}
                 </button>
               </div>
             </div>

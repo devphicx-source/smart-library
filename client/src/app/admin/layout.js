@@ -6,19 +6,22 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { getNotifications } from '@/lib/api';
 import ThemeToggle from '@/components/ThemeToggle';
+import LanguageToggle from '@/components/LanguageToggle';
+import { useLanguage } from '@/lib/language-context';
 
 const NAV_ITEMS = [
-  { label: 'Dashboard', href: '/admin', icon: '📊' },
-  { label: 'Students', href: '/admin/students', icon: '👥' },
-  { label: 'Occupancy', href: '/admin/occupancy', icon: '🗺️' },
-  { label: 'Fees', href: '/admin/fees', icon: '💰' },
-  { label: 'Leaderboard', href: '/admin/leaderboard', icon: '🏆' },
-  { label: 'Analytics', href: '/admin/analytics', icon: '📈' },
+  { label: 'dashboard', href: '/admin', icon: '📊' },
+  { label: 'students', href: '/admin/students', icon: '👥' },
+  { label: 'occupancy', href: '/admin/occupancy', icon: 'MAP' },
+  { label: 'fees', href: '/admin/fees', icon: '💰' },
+  { label: 'leaderboard', href: '/admin/leaderboard', icon: '🏆' },
+  { label: 'analytics', href: '/admin/analytics', icon: '📈' },
 ];
 
 export default function AdminLayout({ children }) {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const { t } = useLanguage();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -68,10 +71,10 @@ export default function AdminLayout({ children }) {
 
   function timeAgo(date) {
     const s = Math.floor((Date.now() - new Date(date)) / 1000);
-    if (s < 60) return 'just now';
-    if (s < 3600) return `${Math.floor(s / 60)}m ago`;
-    if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
-    return `${Math.floor(s / 86400)}d ago`;
+    if (s < 60) return t('just_now');
+    if (s < 3600) return `${Math.floor(s / 60)}${t('minutes_ago')}`;
+    if (s < 86400) return `${Math.floor(s / 3600)}${t('hours_ago')}`;
+    return `${Math.floor(s / 86400)}${t('days_ago')}`;
   }
 
   if (loading || !user) {
@@ -103,8 +106,8 @@ export default function AdminLayout({ children }) {
               S
             </div>
             <div>
-              <h1 className="text-[15px] font-bold tracking-tight">SLMS</h1>
-              <p className="text-[10px] text-[var(--text-secondary)] font-medium tracking-wider uppercase">Admin Panel</p>
+              <h1 className="text-[15px] font-bold tracking-tight">{t('slms_title')}</h1>
+              <p className="text-[10px] text-[var(--text-secondary)] font-medium tracking-wider uppercase">{t('admin_panel')}</p>
             </div>
           </div>
         </div>
@@ -130,8 +133,8 @@ export default function AdminLayout({ children }) {
                 {active && (
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.6)]" />
                 )}
-                <span className="text-base">{item.icon}</span>
-                {item.label}
+                <span className="text-base">{item.icon === 'MAP' ? '🗺️' : item.icon}</span>
+                {t(item.label)}
               </Link>
             );
           })}
@@ -145,7 +148,7 @@ export default function AdminLayout({ children }) {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold truncate">{user.name}</p>
-              <p className="text-[10px] text-[var(--text-secondary)]">Admin</p>
+              <p className="text-[10px] text-[var(--text-secondary)]">{t('admin')}</p>
             </div>
             <button
               onClick={logout}
@@ -176,10 +179,11 @@ export default function AdminLayout({ children }) {
           </button>
 
           <h2 className="text-sm font-semibold hidden lg:block">
-            {NAV_ITEMS.find((n) => n.href === pathname)?.label || 'Dashboard'}
+            {t(NAV_ITEMS.find((n) => n.href === pathname)?.label || 'dashboard')}
           </h2>
 
           <div className="flex items-center gap-3">
+            <LanguageToggle />
             <ThemeToggle />
             {/* New Fee button — only on fees page */}
             {pathname === '/admin/fees' && (
@@ -192,7 +196,7 @@ export default function AdminLayout({ children }) {
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
                 </svg>
-                New Fee
+                {t('new_fee')}
               </button>
             )}
 
@@ -221,13 +225,13 @@ export default function AdminLayout({ children }) {
                   shadow-2xl shadow-black/40 overflow-hidden z-50">
                   {/* Header */}
                   <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--card-border)]">
-                    <h3 className="text-[13px] font-semibold">Notifications</h3>
+                    <h3 className="text-[13px] font-semibold">{t('notifications')}</h3>
                     {unreadCount > 0 && (
                       <button
                         onClick={markAllRead}
                         className="text-[11px] text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
                       >
-                        Mark all read
+                        {t('mark_all_read')}
                       </button>
                     )}
                   </div>
@@ -251,7 +255,7 @@ export default function AdminLayout({ children }) {
                     ) : (
                       <div className="px-4 py-10 text-center">
                         <div className="text-2xl mb-2">🔔</div>
-                        <p className="text-[12px] text-[var(--text-secondary)]">No new notifications</p>
+                        <p className="text-[12px] text-[var(--text-secondary)]">{t('no_notifications')}</p>
                       </div>
                     )}
                   </div>

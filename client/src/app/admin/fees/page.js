@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { getAllFees, createFee, updateFee, getAllStudents } from '@/lib/api';
+import { useLanguage } from '@/lib/language-context';
 
 export default function FeesPage() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [fees, setFees] = useState([]);
   const [total, setTotal] = useState(0);
   const [filter, setFilter] = useState('');
@@ -107,10 +109,10 @@ export default function FeesPage() {
               }
             `}
           >
-            {f === '' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
+            {f === '' ? t('all') : t(f)}
           </button>
         ))}
-        <span className="text-[11px] text-[var(--text-secondary)]/60 ml-1">{total} records</span>
+        <span className="text-[11px] text-[var(--text-secondary)]/60 ml-1">{total} {t('records')}</span>
       </div>
 
       {error && (
@@ -124,12 +126,12 @@ export default function FeesPage() {
         <table className="w-full text-[13px]">
           <thead>
             <tr className="text-[11px] text-[var(--text-secondary)] uppercase tracking-wider border-b border-[var(--card-border)]">
-              <th className="text-left py-3 px-4 font-medium">Student</th>
-              <th className="text-left py-3 px-4 font-medium">Type</th>
-              <th className="text-right py-3 px-4 font-medium">Amount</th>
-              <th className="text-center py-3 px-4 font-medium">Due Date</th>
-              <th className="text-center py-3 px-4 font-medium">Status</th>
-              <th className="text-center py-3 px-4 font-medium">Action</th>
+              <th className="text-left py-3 px-4 font-medium">{t('student_label')}</th>
+              <th className="text-left py-3 px-4 font-medium">{t('type')}</th>
+              <th className="text-right py-3 px-4 font-medium">{t('amount')}</th>
+              <th className="text-center py-3 px-4 font-medium">{t('due_date')}</th>
+              <th className="text-center py-3 px-4 font-medium">{t('status')}</th>
+              <th className="text-center py-3 px-4 font-medium">{t('action')}</th>
             </tr>
           </thead>
           <tbody>
@@ -143,7 +145,7 @@ export default function FeesPage() {
                     <span className="">{f.user?.name || '—'}</span>
                   </div>
                 </td>
-                <td className="py-3 px-4 text-[var(--text-secondary)] capitalize">{f.type}</td>
+                <td className="py-3 px-4 text-[var(--text-secondary)] capitalize">{t(f.type)}</td>
                 <td className="py-3 px-4 text-right font-mono font-semibold">₹{f.amount}</td>
                 <td className="py-3 px-4 text-center text-[var(--text-secondary)]">
                   {new Date(f.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}
@@ -155,13 +157,13 @@ export default function FeesPage() {
                       ${f.status === 'paid' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
                         f.status === 'overdue' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
                         f.status === 'submitted' ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 animate-pulse' :
-                        'bg-amber-500/10 text-amber-400 border border-amber-500/20'}
+                         'bg-amber-500/10 text-amber-400 border border-amber-500/20'}
                     `}>
-                      {f.status}
+                      {t(f.status)}
                     </span>
                     {f.submittedAt && (
                       <span className="text-[9px] text-[var(--text-secondary)]">
-                        At: {new Date(f.submittedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                        {t('at')}: {new Date(f.submittedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     )}
                   </div>
@@ -174,14 +176,14 @@ export default function FeesPage() {
                         bg-emerald-500/10 border border-emerald-500/30 text-emerald-400
                         text-[10px] font-semibold hover:bg-emerald-500/20 transition-all"
                     >
-                      ✓ Paid
+                      ✓ {t('paid_mark')}
                     </button>
                   )}
                 </td>
               </tr>
             ))}
             {fees.length === 0 && (
-              <tr><td colSpan={6} className="text-center py-12 text-[var(--text-secondary)] text-xs">No records found</td></tr>
+              <tr><td colSpan={6} className="text-center py-12 text-[var(--text-secondary)] text-xs">{t('no_records_found')}</td></tr>
             )}
           </tbody>
         </table>
@@ -192,7 +194,7 @@ export default function FeesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--bg-primary)] border border-[var(--card-border)] p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-sm font-bold">Create Fee Entry</h2>
+              <h2 className="text-sm font-bold">{t('create_fee_entry')}</h2>
               <button onClick={() => setShowCreate(false)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-lg transition-colors">✕</button>
             </div>
             <form onSubmit={handleCreate} className="space-y-4">
@@ -209,12 +211,12 @@ export default function FeesPage() {
                     }}
                     onFocus={() => setShowSuggestions(true)}
                     className="input-glass !bg-[var(--bg-primary)] !rounded-xl text-[13px] w-full"
-                    placeholder="Search by name or phone..."
+                    placeholder={t('search_placeholder')}
                     required
                   />
                   {form.userId && (
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded-lg border border-emerald-500/20">
-                      ID Selected
+                      {t('id_selected')}
                     </span>
                   )}
                 </div>
@@ -255,9 +257,9 @@ export default function FeesPage() {
                     onChange={(e) => setForm({ ...form, type: e.target.value })}
                     className="input-glass !bg-[var(--bg-secondary)] !rounded-xl text-[13px]"
                   >
-                    <option value="monthly">Monthly</option>
-                    <option value="daily">Daily</option>
-                    <option value="deposit">Deposit</option>
+                    <option value="monthly">{t('monthly')}</option>
+                    <option value="daily">{t('daily')}</option>
+                    <option value="deposit">{t('deposit')}</option>
                   </select>
                 </div>
               </div>
@@ -279,7 +281,7 @@ export default function FeesPage() {
                   hover:shadow-lg hover:shadow-indigo-500/25 transition-all
                   disabled:opacity-50"
               >
-                {actionLoading ? 'Creating...' : 'Create Fee'}
+                {actionLoading ? t('creating') : t('create_fee')}
               </button>
             </form>
           </div>

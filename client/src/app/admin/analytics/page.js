@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { getAnalytics } from '@/lib/api';
+import { useLanguage } from '@/lib/language-context';
 
 export default function AnalyticsPage() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [data, setData] = useState(null);
 
   useEffect(() => {
@@ -28,10 +30,10 @@ export default function AnalyticsPage() {
   const maxHours = Math.max(...chart.map((d) => d.hours), 1);
 
   const summaryCards = [
-    { label: 'Total Students', value: summary.totalStudents, icon: '👥', color: 'from-blue-500 to-cyan-500' },
-    { label: 'Active Students', value: summary.activeStudents, icon: '✅', color: 'from-emerald-500 to-green-500' },
-    { label: 'Avg Streak', value: summary.avgStreak, icon: '🔥', color: 'from-amber-500 to-orange-500' },
-    { label: 'Max Streak', value: summary.maxStreak, icon: '🏆', color: 'from-purple-500 to-pink-500' },
+    { label: t('total_students_label'), value: summary.totalStudents, icon: '👥', color: 'from-blue-500 to-cyan-500' },
+    { label: t('active_students'), value: summary.activeStudents, icon: '✅', color: 'from-emerald-500 to-green-500' },
+    { label: t('avg_streak'), value: summary.avgStreak, icon: '🔥', color: 'from-amber-500 to-orange-500' },
+    { label: t('max_streak'), value: summary.maxStreak, icon: '🏆', color: 'from-purple-500 to-pink-500' },
   ];
 
   return (
@@ -53,9 +55,9 @@ export default function AnalyticsPage() {
         <div className="text-2xl">📊</div>
         <div>
           <p className="text-sm font-semibold">
-            Peak Day: <span className="text-indigo-400">{summary.peakDay}</span>
+            {t('peak_day')}: <span className="text-indigo-400">{summary.peakDay}</span>
           </p>
-          <p className="text-[11px] text-[var(--text-secondary)]">{summary.peakSessions} sessions recorded — busiest day in the last 7 days</p>
+          <p className="text-[11px] text-[var(--text-secondary)]">{summary.peakSessions} {t('busiest_day_msg')}</p>
         </div>
       </div>
 
@@ -63,7 +65,7 @@ export default function AnalyticsPage() {
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Sessions Bar Chart */}
         <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5">
-          <h3 className="text-sm font-semibold mb-4">📈 Daily Sessions (7 days)</h3>
+          <h3 className="text-sm font-semibold mb-4">📈 {t('daily_sessions_7')}</h3>
           <div className="flex items-end gap-2 h-36">
             {chart.map((day) => (
               <div key={day.date} className="flex-1 flex flex-col items-center gap-1">
@@ -80,7 +82,7 @@ export default function AnalyticsPage() {
 
         {/* Study Hours Bar Chart */}
         <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5">
-          <h3 className="text-sm font-semibold mb-4">⏱️ Daily Study Hours (7 days)</h3>
+          <h3 className="text-sm font-semibold mb-4">⏱️ {t('daily_study_hours_7')}</h3>
           <div className="flex items-end gap-2 h-36">
             {chart.map((day) => (
               <div key={day.date} className="flex-1 flex flex-col items-center gap-1">
@@ -101,11 +103,11 @@ export default function AnalyticsPage() {
         <table className="w-full text-[13px]">
           <thead>
             <tr className="text-[11px] text-[var(--text-secondary)] uppercase tracking-wider border-b border-[var(--card-border)]">
-              <th className="text-left py-3 px-4 font-medium">Day</th>
-              <th className="text-center py-3 px-4 font-medium">Sessions</th>
-              <th className="text-center py-3 px-4 font-medium">Unique Students</th>
-              <th className="text-center py-3 px-4 font-medium">Study Hours</th>
-              <th className="text-left py-3 px-4 font-medium">Activity</th>
+              <th className="text-left py-3 px-4 font-medium">{t('day')}</th>
+              <th className="text-center py-3 px-4 font-medium">{t('sessions')}</th>
+              <th className="text-center py-3 px-4 font-medium">{t('unique_students')}</th>
+              <th className="text-center py-3 px-4 font-medium">{t('study_hours')}</th>
+              <th className="text-left py-3 px-4 font-medium">{t('activity')}</th>
             </tr>
           </thead>
           <tbody>

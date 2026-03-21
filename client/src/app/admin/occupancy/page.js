@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { getOccupancy } from '@/lib/api';
+import { useLanguage } from '@/lib/language-context';
 
 export default function OccupancyPage() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [data, setData] = useState(null);
 
   useEffect(() => {
@@ -47,7 +49,7 @@ export default function OccupancyPage() {
           <span className="text-xl font-bold text-indigo-400">{data.occupied}</span>
           <span className="text-[var(--text-secondary)] text-xl font-light mx-1">/</span>
           <span className="text-xl font-bold">{data.total}</span>
-          <span className="text-xs text-[var(--text-secondary)] ml-2">occupied</span>
+          <span className="text-xs text-[var(--text-secondary)] ml-2">{t('occupied')}</span>
         </div>
         <div className="flex-1 max-w-xs">
           <div className="w-full bg-[var(--card-border)]/50 rounded-full h-2">
@@ -56,14 +58,14 @@ export default function OccupancyPage() {
               style={{ width: `${data.occupancyRate}%` }}
             />
           </div>
-          <p className="text-[10px] text-slate-600 mt-1">{data.occupancyRate}% utilized</p>
+          <p className="text-[10px] text-slate-600 mt-1">{data.occupancyRate}% {t('utilized')}</p>
         </div>
         <div className="flex items-center gap-4 text-[11px] text-slate-500">
           <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500/30 border border-emerald-500/50" /> Available ({data.available})
+            <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500/30 border border-emerald-500/50" /> {t('available')} ({data.available})
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm bg-red-500/30 border border-red-500/50" /> Occupied ({data.occupied})
+            <span className="w-2.5 h-2.5 rounded-sm bg-red-500/30 border border-red-500/50" /> {t('occupied')} ({data.occupied})
           </span>
         </div>
       </div>
@@ -71,7 +73,7 @@ export default function OccupancyPage() {
       {/* Desk Grid by Section */}
       {Object.entries(sections).map(([section, desks]) => (
         <div key={section} className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5">
-          <h3 className="text-sm font-semibold mb-3">Section {section}</h3>
+          <h3 className="text-sm font-semibold mb-3">{t('section_label')} {section}</h3>
           <div className="grid grid-cols-5 sm:grid-cols-10 gap-2.5">
             {desks.map((desk) => (
               <div
@@ -94,7 +96,7 @@ export default function OccupancyPage() {
         </div>
       ))}
 
-      <p className="text-[10px] text-[var(--text-secondary)]/60 text-center">Auto-refreshes every 10s</p>
+      <p className="text-[10px] text-[var(--text-secondary)]/60 text-center">{t('auto_refresh')}</p>
     </div>
   );
 }
