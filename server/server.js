@@ -1,7 +1,8 @@
 const app = require('./src/app');
 const connectDB = require('./src/config/db');
 const { PORT } = require('./src/config/env');
-const { startFeeReminderJob } = require('./src/jobs/feeReminder.job');
+const initFeeReminderJob = require('./src/jobs/feeReminder.job');
+const initOverdueCheckJob = require('./src/jobs/overdueCheck.job');
 const { startDailyReportJob } = require('./src/jobs/dailyReport.job');
 const cron = require('node-cron');
 
@@ -10,7 +11,8 @@ async function start() {
   await connectDB();
 
   // ── Start Cron Jobs ──
-  startFeeReminderJob();
+  initFeeReminderJob();
+  initOverdueCheckJob();
   startDailyReportJob();
 
   // ── Start Server ──

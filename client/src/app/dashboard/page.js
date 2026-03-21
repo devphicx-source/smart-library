@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import {
@@ -11,6 +11,10 @@ import {
   getWeeklyTrend,
   getDesks,
   getMyFees,
+  payFee,
+  notifyPayment,
+  startBreak,
+  endBreak,
 } from '@/lib/api';
 import { formatDuration } from '@/lib/utils';
 
@@ -28,12 +32,9 @@ export default function Dashboard() {
   const [fees, setFees] = useState([]);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedFee, setSelectedFee] = useState(null);
 
-  // ── Pomodoro ──
-  const [pomodoroActive, setPomodoroActive] = useState(false);
-  const [pomodoroSeconds, setPomodoroSeconds] = useState(25 * 60);
-  const [pomodoroMode, setPomodoroMode] = useState('focus'); // 'focus' | 'break'
-  const pomodoroRef = useRef(null);
 
   // ── Auth guard ──
   useEffect(() => {
@@ -66,35 +67,35 @@ export default function Dashboard() {
   // ── Live timer ──
   useEffect(() => {
     if (!session) { setElapsed(0); return; }
-    const start = new Date(session.checkIn).getTime();
-    const tick = () => setElapsed(Math.floor((Date.now() - start) / 1000));
+    
+    const checkInTime = new Date(session.checkIn).getTime();
+    
+    const tick = () => {
+      const now = Date.now();
+      let totalBreakMs = 0;
+      
+      if (session.breaks && session.breaks.length > 0) {
+        session.breaks.forEach(b => {
+          if (b.start && b.end) {
+            totalBreakMs += (new Date(b.end) - new Date(b.start));
+          } else if (b.start && !b.end) {
+            totalBreakMs += (now - new Date(b.start));
+          }
+        });
+      }
+      
+      const studyMs = (now - checkInTime) - totalBreakMs;
+      setElapsed(Math.max(0, Math.floor(studyMs / 1000)));
+    };
+
     tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
+    // Only run interval if session is active
+    if (session.status === 'active') {
+      const id = setInterval(tick, 1000);
+      return () => clearInterval(id);
+    }
   }, [session]);
 
-  // ── Pomodoro timer ──
-  useEffect(() => {
-    if (!pomodoroActive) return;
-    pomodoroRef.current = setInterval(() => {
-      setPomodoroSeconds((prev) => {
-        if (prev <= 1) {
-          clearInterval(pomodoroRef.current);
-          setPomodoroActive(false);
-          // Switch modes
-          if (pomodoroMode === 'focus') {
-            setPomodoroMode('break');
-            return 5 * 60;
-          } else {
-            setPomodoroMode('focus');
-            return 25 * 60;
-          }
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(pomodoroRef.current);
-  }, [pomodoroActive, pomodoroMode]);
 
   // ── Actions ──
   async function openDeskPicker() {
@@ -123,11 +124,60 @@ export default function Dashboard() {
   }
 
   async function handleCheckOut() {
+    if (session.status === 'on-break') {
+      if (!confirm('You are currently on break. Check out now?')) return;
+    }
     setActionLoading(true);
     setError('');
     try {
       await checkOut();
       setSession(null);
+      loadAll();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleStartBreak() {
+    setActionLoading(true);
+    try {
+      await startBreak();
+      const s = await getActiveSession();
+      setSession(s.data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleEndBreak() {
+    setActionLoading(true);
+    try {
+      await endBreak();
+      const s = await getActiveSession();
+      setSession(s.data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handlePayFee(payment) {
+    setSelectedFee(payment);
+    setShowPaymentModal(true);
+  }
+
+  async function handleConfirmPayment(transactionId) {
+    if (!selectedFee) return;
+    setActionLoading(true);
+    setError('');
+    try {
+      await notifyPayment(selectedFee._id, { transactionId });
+      setShowPaymentModal(false);
       loadAll();
     } catch (err) {
       setError(err.message);
@@ -159,7 +209,14 @@ export default function Dashboard() {
   const avgDaily = weeklyData.length ? +(totalWeeklyMinutes / weeklyData.length / 60).toFixed(1) : 0;
   const bestDay = weeklyData.reduce((best, d) => (d.minutes || 0) > (best.minutes || 0) ? d : best, weeklyData[0] || {});
 
-  const pendingFee = fees.find((f) => f.status === 'pending' || f.status === 'overdue');
+  const pendingFee = fees.find((f) => f.status === 'pending' || f.status === 'overdue' || f.status === 'submitted');
+  const lastPaidFee = [...fees]
+    .filter(f => f.status === 'paid')
+    .sort((a, b) => {
+      const dateA = new Date(a.billingEndDate || a.dueDate || 0);
+      const dateB = new Date(b.billingEndDate || b.dueDate || 0);
+      return dateB - dateA;
+    })[0];
 
   if (authLoading || !user) {
     return <div className="min-h-screen flex items-center justify-center bg-[#080b16]"><div className="spinner" /></div>;
@@ -213,8 +270,10 @@ export default function Dashboard() {
             {session ? (
               <>
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 mb-4">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Session Active</span>
+                  <span className={`w-2 h-2 rounded-full ${session.status === 'on-break' ? 'bg-amber-400' : 'bg-emerald-400 animate-pulse'}`} />
+                  <span className={`text-[11px] font-semibold uppercase tracking-wider ${session.status === 'on-break' ? 'text-amber-400' : 'text-emerald-400'}`}>
+                    {session.status === 'on-break' ? 'Session on Break' : 'Session Active'}
+                  </span>
                 </div>
 
                 {/* Timer */}
@@ -233,16 +292,39 @@ export default function Dashboard() {
                   Desk #{session.desk?.deskNumber || '?'} · Section {session.desk?.section || '?'}
                 </p>
 
-                <button
-                  onClick={handleCheckOut}
-                  disabled={actionLoading}
-                  className="px-8 py-3 rounded-2xl text-sm font-bold
-                    bg-gradient-to-r from-red-500 to-red-600 text-white
-                    hover:shadow-xl hover:shadow-red-500/25 hover:-translate-y-0.5
-                    transition-all disabled:opacity-50"
-                >
-                  {actionLoading ? 'Ending...' : '⏹ End Session'}
-                </button>
+                <div className="flex flex-wrap justify-center gap-3">
+                  {session.status === 'active' ? (
+                    <button
+                      onClick={handleStartBreak}
+                      disabled={actionLoading}
+                      className="px-6 py-3 rounded-2xl text-sm font-bold
+                        bg-amber-500/10 border border-amber-500/30 text-amber-500
+                        hover:bg-amber-500/20 transition-all disabled:opacity-50"
+                    >
+                      ☕ Take a Break
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleEndBreak}
+                      disabled={actionLoading}
+                      className="px-6 py-3 rounded-2xl text-sm font-bold
+                        bg-emerald-500/10 border border-emerald-500/30 text-emerald-500
+                        hover:bg-emerald-500/20 transition-all disabled:opacity-50"
+                    >
+                      ▶ Resume Session
+                    </button>
+                  )}
+
+                  <button
+                    onClick={handleCheckOut}
+                    disabled={actionLoading}
+                    className="px-6 py-3 rounded-2xl text-sm font-bold
+                      bg-gradient-to-r from-red-500 to-red-600 text-white
+                      hover:shadow-xl hover:shadow-red-500/25 transition-all disabled:opacity-50"
+                  >
+                    {actionLoading ? 'Ending...' : '⏹ End Session'}
+                  </button>
+                </div>
               </>
             ) : (
               <>
@@ -319,7 +401,7 @@ export default function Dashboard() {
         <div className="rounded-2xl bg-[#0f1328]/80 border border-white/[0.06] p-5">
           <h3 className="text-sm font-semibold text-slate-200 mb-4">📈 This Week</h3>
           <div className="flex items-end gap-2 h-28">
-            {(weeklyData.length > 0 ? weeklyData : Array.from({ length: 7 }, (_, i) => ({ day: ['S','M','T','W','T','F','S'][i], minutes: 0 }))).map((day, i) => {
+            {(weeklyData.length > 0 ? weeklyData : Array.from({ length: 7 }, (_, i) => ({ day: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][i], minutes: 0 }))).map((day, i) => {
               const hrs = +((day.minutes || 0) / 60).toFixed(1);
               const pct = maxDayMinutes > 0 ? ((day.minutes || 0) / maxDayMinutes) * 100 : 0;
               const isToday = i === weeklyData.length - 1 && weeklyData.length > 0;
@@ -335,7 +417,7 @@ export default function Dashboard() {
                     style={{ height: `${Math.max(pct, 4)}%` }}
                   />
                   <span className={`text-[9px] font-medium ${isToday ? 'text-indigo-400' : 'text-slate-600'}`}>
-                    {day.day || ['S','M','T','W','T','F','S'][new Date().getDay()]}
+                    {day.day || ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][i % 7]}
                   </span>
                 </div>
               );
@@ -356,7 +438,7 @@ export default function Dashboard() {
         </div>
 
         {/* ═══ SECTION 4 + 5 + 6: BOTTOM GRID ═══ */}
-        <div className="grid lg:grid-cols-3 gap-4">
+        <div className="grid lg:grid-cols-2 gap-4">
           {/* Leaderboard */}
           <div className="rounded-2xl bg-[#0f1328]/80 border border-white/[0.06] p-5 flex flex-col">
             <h3 className="text-sm font-semibold text-slate-200 mb-3">🏅 Leaderboard</h3>
@@ -395,50 +477,6 @@ export default function Dashboard() {
             </a>
           </div>
 
-          {/* Pomodoro */}
-          <div className="rounded-2xl bg-[#0f1328]/80 border border-white/[0.06] p-5 text-center flex flex-col justify-between">
-            <div>
-              <h3 className="text-sm font-semibold text-slate-200 mb-1">🎯 Focus Mode</h3>
-              <p className="text-[10px] text-slate-500 mb-4 uppercase tracking-wider">
-                {pomodoroMode === 'focus' ? 'Focus Time' : 'Break Time'}
-              </p>
-              <div className="relative w-28 h-28 mx-auto mb-4">
-                <svg className="w-28 h-28 -rotate-90" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="5" />
-                  <circle cx="50" cy="50" r="42" fill="none"
-                    stroke={pomodoroMode === 'focus' ? '#6366f1' : '#34d399'}
-                    strokeWidth="5" strokeLinecap="round"
-                    strokeDasharray={`${(pomodoroSeconds / (pomodoroMode === 'focus' ? 25 * 60 : 5 * 60)) * 264} 264`}
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xl font-mono font-bold text-white tabular-nums">
-                    {String(Math.floor(pomodoroSeconds / 60)).padStart(2, '0')}:{String(pomodoroSeconds % 60).padStart(2, '0')}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setPomodoroActive(!pomodoroActive)}
-                className={`flex-1 py-2 rounded-xl text-[12px] font-semibold transition-all
-                  ${pomodoroActive
-                    ? 'bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20'
-                    : 'bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/20'
-                  }
-                `}
-              >
-                {pomodoroActive ? '⏸ Pause' : '▶ Start'}
-              </button>
-              <button
-                onClick={() => { setPomodoroActive(false); setPomodoroSeconds(pomodoroMode === 'focus' ? 25 * 60 : 5 * 60); }}
-                className="px-3 py-2 rounded-xl text-[12px] font-semibold
-                  bg-white/[0.03] border border-white/[0.06] text-slate-500 hover:bg-white/[0.06] transition-all"
-              >
-                ↺
-              </button>
-            </div>
-          </div>
 
           {/* Fees */}
           <div className="rounded-2xl bg-[#0f1328]/80 border border-white/[0.06] p-5 flex flex-col justify-between">
@@ -462,20 +500,37 @@ export default function Dashboard() {
                   <p className="text-[11px] text-slate-500 mt-1">
                     Due: {new Date(pendingFee.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}
                   </p>
+                  {lastPaidFee && (lastPaidFee.billingEndDate || lastPaidFee.dueDate) && (
+                    <p className="text-[10px] text-emerald-500/80 font-medium mt-2 pt-2 border-t border-white/[0.03]">
+                      Fees Paid Till: {new Date(lastPaidFee.billingEndDate || lastPaidFee.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}
+                    </p>
+                  )}
                 </div>
               ) : (
                 <div className="text-center py-4">
                   <div className="text-2xl mb-2">✅</div>
-                  <p className="text-[12px] text-slate-400">All fees paid!</p>
-                  <p className="text-[10px] text-slate-600 mt-0.5">You&apos;re all caught up</p>
+                  <p className="text-[12px] text-slate-400 font-semibold text-emerald-400">All fees paid!</p>
+                  {lastPaidFee && (lastPaidFee.billingEndDate || lastPaidFee.dueDate) && (
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      Fees Paid Till: <span className="text-slate-200">{new Date(lastPaidFee.billingEndDate || lastPaidFee.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}</span>
+                    </p>
+                  )}
+                  {!lastPaidFee && <p className="text-[10px] text-slate-600 mt-0.5">You&apos;re all caught up</p>}
                 </div>
               )}
             </div>
             {pendingFee && (
-              <button className="mt-4 w-full py-2 rounded-xl text-[12px] font-semibold
-                bg-indigo-500/10 border border-indigo-500/30 text-indigo-400
-                hover:bg-indigo-500/20 transition-all">
-                View Details
+              <button
+                onClick={() => handlePayFee(pendingFee)}
+                disabled={actionLoading || pendingFee.status === 'submitted'}
+                className={`mt-4 w-full py-2 rounded-xl text-[12px] font-semibold
+                border transition-all disabled:opacity-50
+                ${pendingFee.status === 'submitted' 
+                  ? 'bg-indigo-500/5 border-indigo-500/10 text-indigo-400/50 cursor-not-allowed'
+                  : 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/20'
+                }`}
+              >
+                {actionLoading ? 'Processing...' : pendingFee.status === 'submitted' ? 'Payment Submitted' : 'Pay Now'}
               </button>
             )}
           </div>
@@ -511,6 +566,69 @@ export default function Dashboard() {
             <div className="flex gap-4 mt-3 text-[10px] text-slate-500">
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-emerald-500/30 border border-emerald-500/50" /> Available</span>
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-red-500/30 border border-red-500/50" /> Occupied</span>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ═══ PAYMENT MODAL ═══ */}
+      {showPaymentModal && selectedFee && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+          <div className="w-full max-w-sm rounded-3xl bg-[#0f1328] border border-white/[0.1] p-6 shadow-2xl overflow-hidden relative">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-600" />
+            
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-sm font-bold text-white uppercase tracking-widest">Pay Fee</h2>
+              <button 
+                onClick={() => setShowPaymentModal(false)} 
+                className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+                disabled={actionLoading}
+              >✕</button>
+            </div>
+
+            <div className="text-center space-y-4">
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/[0.05]">
+                <p className="text-[11px] text-slate-500 uppercase font-bold tracking-wider mb-1">Total Amount</p>
+                <p className="text-3xl font-black text-white">₹{selectedFee.amount}</p>
+              </div>
+
+              {/* QR Code */}
+              <div className="p-4 bg-white rounded-2xl mx-auto w-fit">
+                <img 
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`upi://pay?pa=devphicx@upi&pn=SmartLibrary&am=${selectedFee.amount}&cu=INR&tn=Fee_${selectedFee._id}`)}`} 
+                  alt="UPI QR Code"
+                  className="w-40 h-40"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-[12px] font-bold text-slate-300">UPI ID: <span className="text-indigo-400">devphicx@upi</span></p>
+                <p className="text-[10px] text-slate-500">Scan QR or use the ID to pay via any UPI app</p>
+              </div>
+
+              {/* Deep Link Button */}
+              <a 
+                href={`upi://pay?pa=devphicx@upi&pn=SmartLibrary&am=${selectedFee.amount}&cu=INR&tn=Fee_${selectedFee._id}`}
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-white text-black text-sm font-bold hover:bg-slate-200 transition-all"
+              >
+                📱 Open UPI App
+              </a>
+
+              <div className="pt-2 border-t border-white/[0.05] space-y-3 text-left">
+                <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">After Payment</p>
+                <input 
+                  type="text"
+                  placeholder="Enter Transaction ID (Optional)"
+                  id="txnIdInput"
+                  className="w-full bg-[#080b16] border border-white/[0.1] rounded-xl px-4 py-2.5 text-sm text-white focus:border-indigo-500 outline-none transition-all"
+                />
+                <button
+                  onClick={() => handleConfirmPayment(document.getElementById('txnIdInput').value)}
+                  disabled={actionLoading}
+                  className="w-full py-3 rounded-2xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-500/20"
+                >
+                  {actionLoading ? 'Submitting...' : '✅ I have paid'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

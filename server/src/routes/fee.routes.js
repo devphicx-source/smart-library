@@ -35,4 +35,13 @@ router.patch(
   feeCtrl.updateFee
 );
 
+// PATCH /api/fees/:id/pay — Student: pay fee (legacy, now mostly used by admin for direct payment)
+router.patch('/:id/pay', authenticate, authorize('student'), feeCtrl.payFee);
+
+// PATCH /api/fees/:id/notify-payment — Student: Notify payment done
+router.patch('/:id/notify-payment', authenticate, authorize('student'), feeCtrl.notifyPayment);
+
+// POST /api/fees/send-reminder — Admin: Send SMS reminder
+router.post('/send-reminder', authenticate, authorize('admin'), feeCtrl.sendManualReminder);
+
 module.exports = router;

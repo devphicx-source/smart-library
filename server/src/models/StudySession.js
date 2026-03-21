@@ -31,9 +31,15 @@ const studySessionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['active', 'completed', 'auto-closed'],
+      enum: ['active', 'on-break', 'completed', 'auto-closed'],
       default: 'active',
     },
+    breaks: [
+      {
+        start: { type: Date, required: true },
+        end: { type: Date, default: null },
+      }
+    ],
   },
   {
     timestamps: true,

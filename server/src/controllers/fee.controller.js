@@ -1,4 +1,6 @@
 const Payment = require('../models/Payment');
+const { createNextBillingCycle } = require('../services/fee.service');
+const { sendPaymentConfirmation, sendFeeReminder } = require('../services/sms.service');
 const { success, error } = require('../utils/response');
 
 /**
@@ -45,13 +47,19 @@ exports.getAllFees = async (req, res) => {
  */
 exports.createFee = async (req, res) => {
   try {
-    const { userId, amount, type, dueDate, notes } = req.body;
+    const { userId, amount, type, dueDate, billingStartDate, billingEndDate, notes } = req.body;
+
+    const start = billingStartDate ? new Date(billingStartDate) : new Date();
+    // Default billingEndDate to dueDate if not provided
+    const end = billingEndDate ? new Date(billingEndDate) : new Date(dueDate);
 
     const payment = await Payment.create({
       user: userId,
       amount,
       type,
       dueDate: new Date(dueDate),
+      billingStartDate: start,
+      billingEndDate: end,
       notes,
     });
 
@@ -83,5 +91,94 @@ exports.updateFee = async (req, res) => {
     return success(res, payment, 'Fee updated');
   } catch (err) {
     return error(res, 'Failed to update fee', 500);
+  }
+};
+
+/**
+ * PATCH /api/fees/:id/pay — Student: pay own fee
+ */
+exports.payFee = async (req, res) => {
+  try {
+    const payment = await Payment.findOne({ _id: req.params.id })
+      .populate('user', 'name phone');
+
+    if (!payment) {
+      return error(res, 'Payment not found', 404);
+    }
+
+    // Auth check: only own fee if student
+    if (req.user.role === 'student' && payment.user._id.toString() !== req.user._id.toString()) {
+      return error(res, 'Unauthorized', 403);
+    }
+
+    if (payment.status === 'paid') {
+      return error(res, 'Fee is already paid', 400);
+    }
+
+    const { paymentMethod, transactionId } = req.body;
+
+    payment.status = 'paid';
+    payment.paidDate = new Date();
+    payment.paymentMethod = paymentMethod || 'cash';
+    payment.transactionId = transactionId;
+    await payment.save();
+
+    // ── AUTOMATION: Create next billing cycle ──
+    const nextFee = await createNextBillingCycle(payment);
+
+    // ── SMS: Confirmation ──
+    await sendPaymentConfirmation(payment.user, payment.amount, nextFee.dueDate);
+
+    return success(res, { payment, nextFee }, 'Payment successful');
+  } catch (err) {
+    console.error('payFee error:', err);
+    return error(res, 'Failed to process payment', 500);
+  }
+};
+
+/**
+ * POST /api/fees/send-reminder — Admin: Manually trigger reminder
+ */
+exports.sendManualReminder = async (req, res) => {
+  try {
+    const { paymentId } = req.body;
+    const payment = await Payment.findById(paymentId).populate('user');
+
+    if (!payment) return error(res, 'Payment not found', 404);
+    if (payment.status === 'paid') return error(res, 'Fee already paid', 400);
+
+    await sendFeeReminder(payment.user, payment.amount, payment.dueDate);
+    
+    payment.reminderCount += 1;
+    await payment.save();
+
+    return success(res, null, 'Reminder sent');
+  } catch (err) {
+    return error(res, 'Failed to send reminder', 500);
+  }
+};
+
+/**
+ * PATCH /api/fees/:id/notify-payment — Student: notify admin after UPI payment
+ */
+exports.notifyPayment = async (req, res) => {
+  try {
+    const { transactionId, paymentMethod } = req.body;
+    // req.user._id is the student
+    const payment = await Payment.findOne({ _id: req.params.id, user: req.user._id });
+
+    if (!payment) return error(res, 'Payment not found', 404);
+    if (payment.status === 'paid') return error(res, 'Fee already paid', 400);
+
+    payment.status = 'submitted';
+    payment.submittedAt = new Date();
+    payment.transactionId = transactionId || '';
+    payment.paymentMethod = paymentMethod || 'upi';
+    await payment.save();
+
+    return success(res, payment, 'Admin notified. Please wait for verification.');
+  } catch (err) {
+    console.error('notifyPayment error:', err);
+    return error(res, 'Failed to notify payment', 500);
   }
 };

@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { createInitialFee } = require('../services/fee.service');
 const { JWT_SECRET, JWT_EXPIRES_IN } = require('../config/env');
 const { success, error } = require('../utils/response');
 
@@ -38,6 +39,8 @@ exports.sendOtp = async (req, res) => {
         role: 'student',
         isActive: true,
       });
+      // ── Create initial fee ──
+      await createInitialFee(user._id);
     }
 
     // ── Send OTP ──
@@ -175,6 +178,8 @@ exports.firebaseLogin = async (req, res) => {
         role: 'student',
         isActive: true,
       });
+      // ── Create initial fee ──
+      await createInitialFee(user._id);
     }
 
     // Generate our JWT

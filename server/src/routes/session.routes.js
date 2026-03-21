@@ -22,6 +22,12 @@ router.post(
   sessionCtrl.checkOut
 );
 
+// POST /api/sessions/start-break
+router.post('/start-break', authenticate, authorize('student'), sessionCtrl.startBreak);
+
+// POST /api/sessions/end-break
+router.post('/end-break', authenticate, authorize('student'), sessionCtrl.endBreak);
+
 // GET /api/sessions/active
 router.get('/active', authenticate, sessionCtrl.getActiveSession);
 

@@ -251,7 +251,23 @@ exports.getNotifications = async (req, res) => {
       notifications.push({ type: 'overdue', icon: '🔴', text: `${f.user?.name || 'Student'}'s ₹${f.amount} fee is overdue`, time: f.dueDate });
     });
 
-    // 3. Pending fees due soon (within 3 days)
+    // 3. Recently paid fees (last 24h)
+    const paidFees = await Payment.find({ status: 'paid', paidDate: { $gte: since } })
+      .populate('user', 'name')
+      .sort({ paidDate: -1 })
+      .limit(10)
+      .lean();
+
+    paidFees.forEach((f) => {
+      notifications.push({
+        type: 'payment',
+        icon: '💰',
+        text: `${f.user?.name || 'Student'} paid ₹${f.amount} fee`,
+        time: f.paidDate,
+      });
+    });
+
+    // 4. Pending fees due soon (within 3 days)
     const soon = new Date();
     soon.setDate(soon.getDate() + 3);
     const upcomingFees = await Payment.find({ status: 'pending', dueDate: { $lte: soon, $gte: new Date() } })
@@ -320,6 +336,10 @@ exports.createStudent = async (req, res) => {
       role: 'student',
       isActive: true,
     });
+
+    // ── Create initial fee ──
+    const { createInitialFee } = require('../services/fee.service');
+    await createInitialFee(student._id);
 
     return success(res, student, 'Student created successfully', 201);
   } catch (err) {

@@ -40,6 +40,8 @@ export const checkUser = (phone) => apiFetch('/auth/check-user', { method: 'POST
 // ── Sessions ──
 export const checkIn = (deskId) => apiFetch('/sessions/check-in', { method: 'POST', body: JSON.stringify({ deskId }) });
 export const checkOut = () => apiFetch('/sessions/check-out', { method: 'POST' });
+export const startBreak = () => apiFetch('/sessions/start-break', { method: 'POST' });
+export const endBreak = () => apiFetch('/sessions/end-break', { method: 'POST' });
 export const getActiveSession = () => apiFetch('/sessions/active');
 export const getSessionHistory = (page = 1) => apiFetch(`/sessions/history?page=${page}`);
 export const getDesks = () => apiFetch('/sessions/desks');
@@ -54,6 +56,8 @@ export const getMyFees = () => apiFetch('/fees/my');
 export const getAllFees = (status, page = 1) => apiFetch(`/fees?page=${page}${status ? `&status=${status}` : ''}`);
 export const createFee = (data) => apiFetch('/fees', { method: 'POST', body: JSON.stringify(data) });
 export const updateFee = (id, status) => apiFetch(`/fees/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) });
+export const payFee = (id) => apiFetch(`/fees/${id}/pay`, { method: 'PATCH' });
+export const notifyPayment = (id, data) => apiFetch(`/fees/${id}/notify-payment`, { method: 'PATCH', body: JSON.stringify(data) });
 
 // ── Admin ──
 export const getOccupancy = () => apiFetch('/admin/occupancy');

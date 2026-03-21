@@ -1,6 +1,7 @@
 const StudySession = require('../models/StudySession');
 const Desk = require('../models/Desk');
 const User = require('../models/User');
+const Payment = require('../models/Payment');
 const { updateStreak } = require('../services/streak.service');
 const { todayIST, utcToISTDate } = require('../utils/ist');
 const { success, error } = require('../utils/response');
@@ -14,9 +15,28 @@ exports.checkIn = async (req, res) => {
     const { deskId } = req.body;
 
     // ── Guard: already checked in? ──
-    const active = await StudySession.findOne({ user: userId, status: 'active' });
+    const active = await StudySession.findOne({ user: userId, status: { $in: ['active', 'on-break'] } });
     if (active) {
       return error(res, 'You already have an active session. Check out first.', 400);
+    }
+
+    // ── Access Control: Check Fee Status ──
+    const now = new Date();
+    const gracePeriodDays = 2; // 2 days grace
+    
+    const unpaidFee = await Payment.findOne({
+      user: userId,
+      status: { $in: ['pending', 'overdue'] },
+      isActive: true
+    }).sort({ dueDate: 1 });
+
+    if (unpaidFee) {
+      // Block if overdue OR (pending and past due date + grace)
+      const isPastGrace = now > new Date(unpaidFee.dueDate.getTime() + gracePeriodDays * 24 * 60 * 60 * 1000);
+      
+      if (unpaidFee.status === 'overdue' || isPastGrace) {
+         return error(res, `Access Restricted: Your fee of ₹${unpaidFee.amount} is overdue. Please pay to continue.`, 403);
+      }
     }
 
     // ── Validate desk ──
@@ -29,7 +49,6 @@ exports.checkIn = async (req, res) => {
     }
 
     // ── Create session ──
-    const now = new Date();
     const istDate = utcToISTDate(now);
 
     const session = await StudySession.create({
@@ -70,15 +89,30 @@ exports.checkOut = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    const session = await StudySession.findOne({ user: userId, status: 'active' });
+    const session = await StudySession.findOne({ user: userId, status: { $in: ['active', 'on-break'] } });
     if (!session) {
       return error(res, 'No active session found', 400);
     }
 
     // ── Calculate duration ──
     const now = new Date();
-    const durationMs = now - session.checkIn;
-    const durationMinutes = Math.round(durationMs / 60000);
+    
+    // Subtract break durations
+    let totalBreakMs = 0;
+    if (session.breaks && session.breaks.length > 0) {
+      session.breaks.forEach(b => {
+        if (b.start && b.end) {
+          totalBreakMs += (new Date(b.end) - new Date(b.start));
+        } else if (b.start && !b.end) {
+          // If checked out while on break, close the break now
+          totalBreakMs += (now - new Date(b.start));
+          b.end = now;
+        }
+      });
+    }
+
+    const durationMs = (now - session.checkIn) - totalBreakMs;
+    const durationMinutes = Math.max(0, Math.round(durationMs / 60000));
 
     session.checkOut = now;
     session.durationMinutes = durationMinutes;
@@ -116,7 +150,7 @@ exports.getActiveSession = async (req, res) => {
   try {
     const session = await StudySession.findOne({
       user: req.user._id,
-      status: 'active',
+      status: { $in: ['active', 'on-break'] },
     }).populate('desk', 'deskNumber section');
 
     return success(res, session);
@@ -167,5 +201,45 @@ exports.getDesks = async (req, res) => {
     return success(res, { desks });
   } catch (err) {
     return error(res, 'Failed to fetch desks', 500);
+  }
+};
+
+/**
+ * POST /api/sessions/start-break
+ */
+exports.startBreak = async (req, res) => {
+  try {
+    const session = await StudySession.findOne({ user: req.user._id, status: 'active' });
+    if (!session) return error(res, 'No active session found', 400);
+
+    session.status = 'on-break';
+    session.breaks.push({ start: new Date() });
+    await session.save();
+
+    return success(res, session, 'Break started');
+  } catch (err) {
+    return error(res, 'Failed to start break', 500);
+  }
+};
+
+/**
+ * POST /api/sessions/end-break
+ */
+exports.endBreak = async (req, res) => {
+  try {
+    const session = await StudySession.findOne({ user: req.user._id, status: 'on-break' });
+    if (!session) return error(res, 'No break in progress', 400);
+
+    const lastBreak = session.breaks[session.breaks.length - 1];
+    if (lastBreak && !lastBreak.end) {
+      lastBreak.end = new Date();
+    }
+
+    session.status = 'active';
+    await session.save();
+
+    return success(res, session, 'Session resumed');
+  } catch (err) {
+    return error(res, 'Failed to end break', 500);
   }
 };

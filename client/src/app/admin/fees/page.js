@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
-import { getAllFees, createFee, updateFee } from '@/lib/api';
+import { getAllFees, createFee, updateFee, getAllStudents } from '@/lib/api';
 
 export default function FeesPage() {
   const { user } = useAuth();
@@ -13,6 +13,35 @@ export default function FeesPage() {
   const [form, setForm] = useState({ userId: '', amount: '', type: 'monthly', dueDate: '' });
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // ── Search State ──
+  const [studentSearch, setStudentSearch] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // ── Fetch Suggestions ──
+  useEffect(() => {
+    if (studentSearch.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await getAllStudents(studentSearch);
+        setSuggestions(res.data.students || []);
+      } catch (err) {
+        console.error(err);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [studentSearch]);
+
+  // ── Close suggestions on click outside ──
+  useEffect(() => {
+    const handleClick = () => setShowSuggestions(false);
+    window.addEventListener('click', handleClick);
+    return () => window.removeEventListener('click', handleClick);
+  }, []);
 
   useEffect(() => {
     if (!user || user.role !== 'admin') return;
@@ -37,6 +66,7 @@ export default function FeesPage() {
       await createFee(form);
       setShowCreate(false);
       setForm({ userId: '', amount: '', type: 'monthly', dueDate: '' });
+      setStudentSearch('');
       loadFees();
     } catch (err) {
       setError(err.message);
@@ -65,7 +95,7 @@ export default function FeesPage() {
     <div className="space-y-5 max-w-[1400px]">
       {/* Filters */}
       <div className="flex items-center gap-2 flex-wrap">
-        {['', 'pending', 'paid', 'overdue'].map((f) => (
+        {['', 'pending', 'submitted', 'paid', 'overdue'].map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
@@ -119,17 +149,25 @@ export default function FeesPage() {
                   {new Date(f.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}
                 </td>
                 <td className="py-3 px-4 text-center">
-                  <span className={`
-                    inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider
-                    ${f.status === 'paid' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                      f.status === 'overdue' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                      'bg-amber-500/10 text-amber-400 border border-amber-500/20'}
-                  `}>
-                    {f.status}
-                  </span>
+                  <div className="flex flex-col items-center gap-1">
+                    <span className={`
+                      inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider
+                      ${f.status === 'paid' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                        f.status === 'overdue' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                        f.status === 'submitted' ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 animate-pulse' :
+                        'bg-amber-500/10 text-amber-400 border border-amber-500/20'}
+                    `}>
+                      {f.status}
+                    </span>
+                    {f.submittedAt && (
+                      <span className="text-[9px] text-slate-500">
+                        At: {new Date(f.submittedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="py-3 px-4 text-center">
-                  {f.status !== 'paid' && (
+                  {(f.status === 'pending' || f.status === 'overdue' || f.status === 'submitted') && (
                     <button
                       onClick={() => handleMarkPaid(f._id)}
                       className="opacity-0 group-hover:opacity-100 px-2.5 py-1 rounded-lg
@@ -158,16 +196,48 @@ export default function FeesPage() {
               <button onClick={() => setShowCreate(false)} className="text-slate-500 hover:text-white text-lg transition-colors">✕</button>
             </div>
             <form onSubmit={handleCreate} className="space-y-4">
-              <div>
-                <label className="block text-[11px] text-slate-500 mb-1.5 uppercase tracking-wider font-medium">Student User ID</label>
-                <input
-                  type="text"
-                  value={form.userId}
-                  onChange={(e) => setForm({ ...form, userId: e.target.value })}
-                  className="input-glass !bg-[#080b16] !rounded-xl text-[13px]"
-                  placeholder="MongoDB ObjectId"
-                  required
-                />
+              <div className="relative">
+                <label className="block text-[11px] text-slate-500 mb-1.5 uppercase tracking-wider font-medium">Student Name</label>
+                <div className="relative" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="text"
+                    value={studentSearch}
+                    onChange={(e) => {
+                      setStudentSearch(e.target.value);
+                      setShowSuggestions(true);
+                      if (!e.target.value) setForm({ ...form, userId: '' });
+                    }}
+                    onFocus={() => setShowSuggestions(true)}
+                    className="input-glass !bg-[#080b16] !rounded-xl text-[13px] w-full"
+                    placeholder="Search by name or phone..."
+                    required
+                  />
+                  {form.userId && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded-lg border border-emerald-500/20">
+                      ID Selected
+                    </span>
+                  )}
+                </div>
+
+                {/* Suggestions Dropdown */}
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute z-[60] left-0 right-0 mt-2 rounded-xl bg-[#1a1f35] border border-white/[0.08] shadow-2xl overflow-hidden max-h-48 overflow-y-auto">
+                    {suggestions.map((s) => (
+                      <div
+                        key={s._id}
+                        onClick={() => {
+                          setForm({ ...form, userId: s._id });
+                          setStudentSearch(s.name);
+                          setShowSuggestions(false);
+                        }}
+                        className="p-3 hover:bg-white/[0.03] cursor-pointer border-b border-white/[0.03] last:border-0 transition-colors"
+                      >
+                        <p className="text-[13px] font-semibold text-white">{s.name}</p>
+                        <p className="text-[10px] text-slate-500">{s.phone}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>

@@ -1,50 +1,45 @@
 const cron = require('node-cron');
 const Payment = require('../models/Payment');
-const User = require('../models/User');
-const { sendFeeReminder } = require('../services/whatsapp.service');
+const { sendFeeReminder } = require('../services/sms.service');
 
 /**
- * Fee Reminder Job — Runs daily at 9:00 AM IST (3:30 AM UTC).
- * Sends WhatsApp reminders for pending fees due within 3 days.
+ * Runs every day at 09:00 AM IST
  */
-function startFeeReminderJob() {
-  // 3:30 AM UTC = 9:00 AM IST
-  cron.schedule('30 3 * * *', async () => {
-    console.log('⏰ Running fee reminder job...');
+const initFeeReminderJob = () => {
+  // CRON: '0 9 * * *' (Minute Hour DayOfMonth Month DayOfWeek)
+  // This runs at 9:00 AM UTC. For IST (UTC+5:30), 9:00 AM IST is 3:30 AM UTC.
+  // Actually, if the server is in IST, '0 9 * * *' is fine.
+  
+  cron.schedule('0 9 * * *', async () => {
+    console.log('[Job] Running Daily Fee Reminder...');
 
     try {
-      const threeDaysFromNow = new Date();
-      threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
+      const today = new Date();
+      const threeDaysLater = new Date();
+      threeDaysLater.setDate(today.getDate() + 3);
 
-      const pendingPayments = await Payment.find({
+      // Find pending payments due in next 3 days
+      const payments = await Payment.find({
         status: 'pending',
-        reminderSent: false,
-        dueDate: { $lte: threeDaysFromNow },
-      }).populate('user', 'name phone');
+        dueDate: { $lte: threeDaysLater, $gte: today },
+        isActive: true
+      }).populate('user');
 
-      console.log(`📨 Found ${pendingPayments.length} fee reminders to send`);
-
-      for (const payment of pendingPayments) {
-        if (!payment.user || !payment.user.phone) continue;
-
-        await sendFeeReminder(
-          payment.user.phone,
-          payment.user.name,
-          payment.amount,
-          payment.dueDate.toISOString().slice(0, 10)
-        );
-
-        payment.reminderSent = true;
-        await payment.save();
+      for (const payment of payments) {
+        if (payment.user && payment.user.phone) {
+          await sendFeeReminder(payment.user, payment.amount, payment.dueDate);
+          payment.reminderCount += 1;
+          await payment.save();
+        }
       }
-
-      console.log('✅ Fee reminder job complete');
+      
+      console.log(`[Job] Daily Reminder sent to ${payments.length} users.`);
     } catch (err) {
-      console.error('❌ Fee reminder job failed:', err);
+      console.error('[Job Error] Fee Reminder failed:', err);
     }
+  }, {
+    timezone: "Asia/Kolkata"
   });
+};
 
-  console.log('📅 Fee reminder cron scheduled (9:00 AM IST daily)');
-}
-
-module.exports = { startFeeReminderJob };
+module.exports = initFeeReminderJob;

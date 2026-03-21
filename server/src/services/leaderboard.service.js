@@ -33,7 +33,7 @@ async function getLeaderboard(limit = 20) {
  */
 async function getDailyStats(istDate) {
   const sessions = await StudySession.aggregate([
-    { $match: { istDate, status: { $in: ['completed', 'auto-closed'] } } },
+    { $match: { istDate, status: { $in: ['active', 'on-break', 'completed', 'auto-closed'] } } },
     {
       $group: {
         _id: null,
