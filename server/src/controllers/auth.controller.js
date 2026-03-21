@@ -194,7 +194,11 @@ exports.firebaseLogin = async (req, res) => {
       user: user.toJSON(),
     }, 'Login successful');
   } catch (err) {
-    console.error('firebaseLogin error:', err);
-    return error(res, 'Authentication failed', 401);
+    console.error('firebaseLogin error details:', {
+      message: err.message,
+      code: err.code,
+      stack: err.stack
+    });
+    return error(res, `Authentication failed: ${err.message}`, 401);
   }
 };
