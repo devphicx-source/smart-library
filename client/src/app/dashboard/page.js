@@ -219,21 +219,21 @@ export default function Dashboard() {
     })[0];
 
   if (authLoading || !user) {
-    return <div className="min-h-screen flex items-center justify-center bg-[#080b16]"><div className="spinner" /></div>;
+    return <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)]"><div className="spinner" /></div>;
   }
 
   const t = session ? fmtTimer(elapsed) : null;
 
   return (
-    <div className="min-h-screen bg-[#080b16] text-slate-200">
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
       {/* ═══ TOP HEADER ═══ */}
-      <header className="sticky top-0 z-30 backdrop-blur-xl bg-[#080b16]/80 border-b border-white/[0.06]">
+      <header className="sticky top-0 z-30 backdrop-blur-xl bg-[var(--bg-primary)]/80 border-b border-[var(--card-border)]">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div>
-            <h1 className="text-[15px] font-bold text-white">
+            <h1 className="text-[15px] font-bold">
               {greeting()}, {user.name?.split(' ')[0]} 👋
             </h1>
-            <p className="text-[11px] text-slate-500">Let&apos;s build your streak today 🔥</p>
+            <p className="text-[11px] text-[var(--text-secondary)]">Let&apos;s build your streak today 🔥</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
@@ -260,7 +260,7 @@ export default function Dashboard() {
           rounded-2xl p-6 text-center relative overflow-hidden
           ${session
             ? 'bg-gradient-to-br from-emerald-900/30 to-emerald-950/30 border border-emerald-500/20'
-            : 'bg-[#0f1328]/80 border border-white/[0.06]'
+            : 'bg-[var(--card-bg)] border border-[var(--card-border)]'
           }
         `}>
           {session && (
@@ -281,14 +281,14 @@ export default function Dashboard() {
                   {[t.h, t.m, t.s].map((v, i) => (
                     <div key={i} className="flex items-center gap-2">
                       {i > 0 && <span className="text-2xl text-slate-600 font-light animate-pulse">:</span>}
-                      <div className="w-16 h-16 rounded-2xl bg-black/30 border border-white/[0.06] flex items-center justify-center">
-                        <span className="text-3xl font-mono font-bold text-white tabular-nums">{v}</span>
+                      <div className="w-16 h-16 rounded-2xl bg-black/10 dark:bg-black/30 border border-[var(--card-border)] flex items-center justify-center">
+                        <span className="text-3xl font-mono font-bold text-[var(--text-primary)] tabular-nums">{v}</span>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <p className="text-[12px] text-slate-500 mb-5">
+                <p className="text-[12px] text-[var(--text-secondary)] mb-5">
                   Desk #{session.desk?.deskNumber || '?'} · Section {session.desk?.section || '?'}
                 </p>
 
@@ -329,8 +329,8 @@ export default function Dashboard() {
             ) : (
               <>
                 <div className="text-3xl mb-3">📚</div>
-                <h2 className="text-lg font-bold text-white mb-1">Ready to study?</h2>
-                <p className="text-[12px] text-slate-500 mb-5">Pick a desk and start your session</p>
+                <h2 className="text-lg font-bold mb-1">Ready to study?</h2>
+                <p className="text-[12px] text-[var(--text-secondary)] mb-5">Pick a desk and start your session</p>
                 <button
                   onClick={openDeskPicker}
                   className="px-8 py-3.5 rounded-2xl text-sm font-bold
@@ -349,11 +349,11 @@ export default function Dashboard() {
         {/* ═══ SECTION 2: STREAK + PROGRESS ═══ */}
         <div className="grid grid-cols-2 gap-4">
           {/* Streak Card */}
-          <div className="rounded-2xl bg-[#0f1328]/80 border border-white/[0.06] p-5 text-center">
+          <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5 text-center">
             <div className="relative w-24 h-24 mx-auto mb-3">
               {/* Progress Ring */}
               <svg className="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="6" />
+                <circle cx="50" cy="50" r="42" fill="none" stroke="var(--card-border)" strokeWidth="6" />
                 <circle cx="50" cy="50" r="42" fill="none" stroke="url(#streakGrad)" strokeWidth="6"
                   strokeLinecap="round"
                   strokeDasharray={`${Math.min(user.currentStreak || 0, 30) / 30 * 264} 264`}
@@ -367,27 +367,27 @@ export default function Dashboard() {
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-2xl font-bold text-amber-400">{user.currentStreak || 0}</span>
-                <span className="text-[9px] text-slate-500 uppercase tracking-wider">days</span>
+                <span className="text-[9px] text-[var(--text-secondary)] uppercase tracking-wider">days</span>
               </div>
             </div>
-            <p className="text-[13px] font-semibold text-white">🔥 Current Streak</p>
-            <p className="text-[11px] text-slate-500 mt-0.5">Best: {user.longestStreak || 0} days</p>
+            <p className="text-[13px] font-semibold text-[var(--text-primary)]">🔥 Current Streak</p>
+            <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">Best: {user.longestStreak || 0} days</p>
           </div>
 
           {/* Today's Progress */}
-          <div className="rounded-2xl bg-[#0f1328]/80 border border-white/[0.06] p-5 flex flex-col justify-between">
+          <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5 flex flex-col justify-between">
             <div>
-              <p className="text-[11px] text-slate-500 uppercase tracking-wider font-medium mb-1">Today&apos;s Study</p>
-              <p className="text-2xl font-bold text-white">
+              <p className="text-[11px] text-[var(--text-secondary)] uppercase tracking-wider font-medium mb-1">Today&apos;s Study</p>
+              <p className="text-2xl font-bold">
                 {formatDuration(user.totalStudyMinutes || 0)}
               </p>
             </div>
             <div className="mt-4">
               <div className="flex items-center justify-between mb-1.5">
-                <p className="text-[11px] text-slate-500">Weekly Goal</p>
+                <p className="text-[11px] text-[var(--text-secondary)]">Weekly Goal</p>
                 <p className="text-[11px] font-semibold text-indigo-400">{totalWeeklyHours}h / {weeklyGoal}h</p>
               </div>
-              <div className="w-full bg-white/[0.04] rounded-full h-2">
+              <div className="w-full bg-[var(--card-border)] rounded-full h-2">
                 <div
                   className="h-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-700"
                   style={{ width: `${weeklyPct}%` }}
@@ -398,8 +398,8 @@ export default function Dashboard() {
         </div>
 
         {/* ═══ SECTION 3: WEEKLY CHART ═══ */}
-        <div className="rounded-2xl bg-[#0f1328]/80 border border-white/[0.06] p-5">
-          <h3 className="text-sm font-semibold text-slate-200 mb-4">📈 This Week</h3>
+        <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5">
+          <h3 className="text-sm font-semibold mb-4">📈 This Week</h3>
           <div className="flex items-end gap-2 h-28">
             {(weeklyData.length > 0 ? weeklyData : Array.from({ length: 7 }, (_, i) => ({ day: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][i], minutes: 0 }))).map((day, i) => {
               const hrs = +((day.minutes || 0) / 60).toFixed(1);
@@ -423,14 +423,14 @@ export default function Dashboard() {
               );
             })}
           </div>
-          <div className="flex items-center gap-6 mt-4 pt-3 border-t border-white/[0.03]">
+          <div className="flex items-center gap-6 mt-4 pt-3 border-t border-[var(--card-border)]">
             <div>
-              <p className="text-[10px] text-slate-500 uppercase tracking-wider">Avg Daily</p>
-              <p className="text-sm font-bold text-white">{avgDaily}h</p>
+              <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider">Avg Daily</p>
+              <p className="text-sm font-bold">{avgDaily}h</p>
             </div>
             <div>
-              <p className="text-[10px] text-slate-500 uppercase tracking-wider">Best Day</p>
-              <p className="text-sm font-bold text-white">
+              <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider">Best Day</p>
+              <p className="text-sm font-bold">
                 {bestDay?.day || '—'} ({+((bestDay?.minutes || 0) / 60).toFixed(1)}h)
               </p>
             </div>
@@ -440,8 +440,8 @@ export default function Dashboard() {
         {/* ═══ SECTION 4 + 5 + 6: BOTTOM GRID ═══ */}
         <div className="grid lg:grid-cols-2 gap-4">
           {/* Leaderboard */}
-          <div className="rounded-2xl bg-[#0f1328]/80 border border-white/[0.06] p-5 flex flex-col">
-            <h3 className="text-sm font-semibold text-slate-200 mb-3">🏅 Leaderboard</h3>
+          <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5 flex flex-col">
+            <h3 className="text-sm font-semibold mb-3">🏅 Leaderboard</h3>
             <div className="space-y-1.5 flex-1">
               {leaderboard.map((entry) => {
                 const isMe = entry.userId === user._id;
@@ -449,7 +449,7 @@ export default function Dashboard() {
                   <div
                     key={entry.rank}
                     className={`flex items-center gap-2.5 p-2 rounded-xl transition-all
-                      ${isMe ? 'bg-indigo-500/10 border border-indigo-500/20' : 'hover:bg-white/[0.02]'}
+                      ${isMe ? 'bg-indigo-500/10 border border-indigo-500/20' : 'hover:bg-[var(--card-border)]/50'}
                     `}
                   >
                     <span className={`
@@ -461,9 +461,9 @@ export default function Dashboard() {
                     `}>
                       {entry.rank}
                     </span>
-                    <span className="flex-1 text-[12px] text-slate-300 truncate">{entry.name}</span>
-                    <span className="text-[11px] text-amber-400">🔥{entry.currentStreak}</span>
-                    <span className="text-[11px] text-slate-500 w-8 text-right">{entry.totalStudyHours}h</span>
+                    <span className="flex-1 text-[12px] text-[var(--text-secondary)] truncate">{entry.name}</span>
+                    <span className="text-[11px] text-amber-400 font-bold">🔥 {entry.currentStreak}</span>
+                    <span className="text-[11px] text-[var(--text-secondary)] w-8 text-right font-mono">{entry.totalStudyHours}h</span>
                   </div>
                 );
               })}
@@ -479,9 +479,9 @@ export default function Dashboard() {
 
 
           {/* Fees */}
-          <div className="rounded-2xl bg-[#0f1328]/80 border border-white/[0.06] p-5 flex flex-col justify-between">
+          <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5 flex flex-col justify-between">
             <div>
-              <h3 className="text-sm font-semibold text-slate-200 mb-3">💰 Fee Status</h3>
+              <h3 className="text-sm font-semibold mb-3">💰 Fee Status</h3>
               {pendingFee ? (
                 <div>
                   <div className="flex items-center gap-2 mb-2">
@@ -495,8 +495,8 @@ export default function Dashboard() {
                       {pendingFee.status}
                     </span>
                   </div>
-                  <p className="text-xl font-bold text-white mb-1">₹{pendingFee.amount}</p>
-                  <p className="text-[11px] text-slate-500 capitalize">{pendingFee.type} fee</p>
+                  <p className="text-xl font-bold mb-1">₹{pendingFee.amount}</p>
+                  <p className="text-[11px] text-[var(--text-secondary)] capitalize">{pendingFee.type} fee</p>
                   <p className="text-[11px] text-slate-500 mt-1">
                     Due: {new Date(pendingFee.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}
                   </p>
@@ -512,10 +512,10 @@ export default function Dashboard() {
                   <p className="text-[12px] text-slate-400 font-semibold text-emerald-400">All fees paid!</p>
                   {lastPaidFee && (lastPaidFee.billingEndDate || lastPaidFee.dueDate) && (
                     <p className="text-[10px] text-slate-500 mt-1">
-                      Fees Paid Till: <span className="text-slate-200">{new Date(lastPaidFee.billingEndDate || lastPaidFee.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}</span>
+                      Fees Paid Till: <span className="text-[var(--text-primary)] font-semibold">{new Date(lastPaidFee.billingEndDate || lastPaidFee.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}</span>
                     </p>
                   )}
-                  {!lastPaidFee && <p className="text-[10px] text-slate-600 mt-0.5">You&apos;re all caught up</p>}
+                  {!lastPaidFee && <p className="text-[10px] text-[var(--text-secondary)] mt-0.5">You&apos;re all caught up</p>}
                 </div>
               )}
             </div>
@@ -540,10 +540,10 @@ export default function Dashboard() {
       {/* ═══ DESK PICKER MODAL ═══ */}
       {showDeskPicker && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-[#0f1328] border border-white/[0.08] p-5 shadow-2xl max-h-[80vh] overflow-y-auto">
+          <div className="w-full max-w-lg rounded-2xl bg-[var(--bg-primary)] border border-[var(--card-border)] p-5 shadow-2xl max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-bold text-slate-200">Pick a Desk</h2>
-              <button onClick={() => setShowDeskPicker(false)} className="text-slate-500 hover:text-white text-lg">✕</button>
+              <h2 className="text-sm font-bold">Pick a Desk</h2>
+              <button onClick={() => setShowDeskPicker(false)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-lg">✕</button>
             </div>
             <div className="grid grid-cols-5 sm:grid-cols-6 gap-2">
               {desks.map((d) => (
@@ -573,11 +573,11 @@ export default function Dashboard() {
       {/* ═══ PAYMENT MODAL ═══ */}
       {showPaymentModal && selectedFee && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-          <div className="w-full max-w-sm rounded-3xl bg-[#0f1328] border border-white/[0.1] p-6 shadow-2xl overflow-hidden relative">
+          <div className="w-full max-w-sm rounded-3xl bg-[var(--bg-primary)] border border-[var(--card-border)] p-6 shadow-2xl overflow-hidden relative">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-600" />
             
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest">Pay Fee</h2>
+              <h2 className="text-sm font-bold uppercase tracking-widest">Pay Fee</h2>
               <button 
                 onClick={() => setShowPaymentModal(false)} 
                 className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
@@ -586,9 +586,9 @@ export default function Dashboard() {
             </div>
 
             <div className="text-center space-y-4">
-              <div className="p-4 rounded-2xl bg-white/5 border border-white/[0.05]">
-                <p className="text-[11px] text-slate-500 uppercase font-bold tracking-wider mb-1">Total Amount</p>
-                <p className="text-3xl font-black text-white">₹{selectedFee.amount}</p>
+              <div className="p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--card-border)]">
+                <p className="text-[11px] text-[var(--text-secondary)] uppercase font-bold tracking-wider mb-1">Total Amount</p>
+                <p className="text-3xl font-black">₹{selectedFee.amount}</p>
               </div>
 
               {/* QR Code */}
@@ -601,8 +601,8 @@ export default function Dashboard() {
               </div>
 
               <div className="space-y-1">
-                <p className="text-[12px] font-bold text-slate-300">UPI ID: <span className="text-indigo-400">devphicx@upi</span></p>
-                <p className="text-[10px] text-slate-500">Scan QR or use the ID to pay via any UPI app</p>
+                <p className="text-[12px] font-bold">UPI ID: <span className="text-indigo-400">devphicx@upi</span></p>
+                <p className="text-[10px] text-[var(--text-secondary)]">Scan QR or use the ID to pay via any UPI app</p>
               </div>
 
               {/* Deep Link Button */}
@@ -619,7 +619,7 @@ export default function Dashboard() {
                   type="text"
                   placeholder="Enter Transaction ID (Optional)"
                   id="txnIdInput"
-                  className="w-full bg-[#080b16] border border-white/[0.1] rounded-xl px-4 py-2.5 text-sm text-white focus:border-indigo-500 outline-none transition-all"
+                  className="w-full bg-[var(--bg-primary)] border border-[var(--card-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-primary)] focus:border-indigo-500 outline-none transition-all"
                 />
                 <button
                   onClick={() => handleConfirmPayment(document.getElementById('txnIdInput').value)}

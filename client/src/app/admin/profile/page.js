@@ -51,32 +51,32 @@ export default function AdminProfile() {
   return (
     <div className="max-w-lg mx-auto space-y-5">
       {/* ═══ Profile Card ═══ */}
-      <div className="rounded-2xl bg-[#0f1328]/80 border border-white/[0.06] p-6 text-center">
+      <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-6 text-center">
         <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold shadow-xl shadow-indigo-500/25 mb-4">
           {user.name?.charAt(0) || 'A'}
         </div>
-        <h2 className="text-lg font-bold text-white">{user.name}</h2>
-        <p className="text-[12px] text-slate-500 mt-0.5">{user.phone}</p>
+        <h2 className="text-lg font-bold">{user.name}</h2>
+        <p className="text-[12px] text-[var(--text-secondary)] mt-0.5">{user.phone}</p>
         <div className="flex items-center justify-center gap-2 mt-3">
           <span className="px-3 py-1 rounded-lg bg-purple-500/10 border border-purple-500/20 text-[11px] font-semibold text-purple-400">
             👑 Admin
           </span>
         </div>
-        <p className="text-[11px] text-slate-600 mt-3">Managing since {joinDate}</p>
+        <p className="text-[11px] text-[var(--text-secondary)] mt-3">Managing since {joinDate}</p>
       </div>
 
       {/* ═══ Library Overview Stats ═══ */}
       {stats && (
-        <div className="rounded-2xl bg-[#0f1328]/80 border border-white/[0.06] p-5">
-          <h3 className="text-sm font-semibold text-slate-200 mb-4">📊 Library Overview</h3>
+        <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5">
+          <h3 className="text-sm font-semibold mb-4">📊 Library Overview</h3>
           <div className="space-y-2">
             {overviewCards.map((card) => (
-              <div key={card.label} className="flex items-center justify-between py-2.5 border-b border-white/[0.03] last:border-0">
+              <div key={card.label} className="flex items-center justify-between py-2.5 border-b border-[var(--card-border)]/30 last:border-0">
                 <div className="flex items-center gap-2.5">
                   <span className="text-base">{card.icon}</span>
-                  <span className="text-[13px] text-slate-400">{card.label}</span>
+                  <span className="text-[13px] text-[var(--text-secondary)]">{card.label}</span>
                 </div>
-                <span className="text-[14px] font-bold text-white">{card.value}</span>
+                <span className="text-[14px] font-bold">{card.value}</span>
               </div>
             ))}
           </div>
@@ -84,8 +84,8 @@ export default function AdminProfile() {
       )}
 
       {/* ═══ Quick Links ═══ */}
-      <div className="rounded-2xl bg-[#0f1328]/80 border border-white/[0.06] p-5">
-        <h3 className="text-sm font-semibold text-slate-200 mb-3">⚡ Quick Actions</h3>
+      <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5">
+        <h3 className="text-sm font-semibold mb-3">⚡ Quick Actions</h3>
         <div className="grid grid-cols-2 gap-2">
           {[
             { label: 'Students', href: '/admin/students', icon: '👥' },
@@ -97,8 +97,8 @@ export default function AdminProfile() {
               key={link.label}
               href={link.href}
               className="flex items-center gap-2 p-3 rounded-xl
-                bg-white/[0.02] border border-white/[0.04] text-[12px] text-slate-300 font-medium
-                hover:bg-white/[0.05] hover:border-white/[0.08] transition-all"
+                bg-[var(--bg-primary)] border border-[var(--card-border)] text-[12px] text-[var(--text-secondary)] font-medium
+                hover:bg-[var(--card-border)]/50 hover:border-[var(--card-border)] transition-all"
             >
               <span>{link.icon}</span>
               {link.label}

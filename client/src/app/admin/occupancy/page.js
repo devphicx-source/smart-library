@@ -43,14 +43,14 @@ export default function OccupancyPage() {
     <div className="space-y-5 max-w-[1400px]">
       {/* Stats Bar */}
       <div className="flex items-center gap-6 flex-wrap">
-        <div className="rounded-2xl bg-[#0f1328]/80 border border-white/[0.06] px-5 py-3">
+        <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] px-5 py-3">
           <span className="text-xl font-bold text-indigo-400">{data.occupied}</span>
-          <span className="text-slate-500 text-xl font-light mx-1">/</span>
-          <span className="text-xl font-bold text-slate-300">{data.total}</span>
-          <span className="text-xs text-slate-500 ml-2">occupied</span>
+          <span className="text-[var(--text-secondary)] text-xl font-light mx-1">/</span>
+          <span className="text-xl font-bold">{data.total}</span>
+          <span className="text-xs text-[var(--text-secondary)] ml-2">occupied</span>
         </div>
         <div className="flex-1 max-w-xs">
-          <div className="w-full bg-white/[0.04] rounded-full h-2">
+          <div className="w-full bg-[var(--card-border)]/50 rounded-full h-2">
             <div
               className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all duration-700"
               style={{ width: `${data.occupancyRate}%` }}
@@ -70,8 +70,8 @@ export default function OccupancyPage() {
 
       {/* Desk Grid by Section */}
       {Object.entries(sections).map(([section, desks]) => (
-        <div key={section} className="rounded-2xl bg-[#0f1328]/80 border border-white/[0.06] p-5">
-          <h3 className="text-sm font-semibold text-slate-300 mb-3">Section {section}</h3>
+        <div key={section} className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5">
+          <h3 className="text-sm font-semibold mb-3">Section {section}</h3>
           <div className="grid grid-cols-5 sm:grid-cols-10 gap-2.5">
             {desks.map((desk) => (
               <div
@@ -94,7 +94,7 @@ export default function OccupancyPage() {
         </div>
       ))}
 
-      <p className="text-[10px] text-slate-700 text-center">Auto-refreshes every 10s</p>
+      <p className="text-[10px] text-[var(--text-secondary)]/60 text-center">Auto-refreshes every 10s</p>
     </div>
   );
 }

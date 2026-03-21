@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { getNotifications } from '@/lib/api';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/admin', icon: '📊' },
@@ -82,7 +83,7 @@ export default function AdminLayout({ children }) {
   }
 
   return (
-    <div className="min-h-screen flex bg-[#080b16]">
+    <div className="min-h-screen flex bg-[var(--bg-primary)] text-[var(--text-primary)]">
       {/* ── Mobile Overlay ── */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 bg-black/60 lg:hidden" onClick={() => setSidebarOpen(false)} />
@@ -91,19 +92,19 @@ export default function AdminLayout({ children }) {
       {/* ── Sidebar ── */}
       <aside className={`
         fixed lg:sticky top-0 left-0 z-50 h-screen w-[260px] flex flex-col
-        bg-[#0c1029]/95 backdrop-blur-xl border-r border-white/[0.06]
+        bg-[var(--bg-secondary)] backdrop-blur-xl border-r border-[var(--card-border)]
         transition-transform duration-300 lg:translate-x-0
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {/* Logo */}
-        <div className="px-6 pt-7 pb-6 border-b border-white/[0.06]">
+        <div className="px-6 pt-7 pb-6 border-b border-[var(--card-border)]">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold shadow-lg shadow-indigo-500/25">
               S
             </div>
             <div>
-              <h1 className="text-[15px] font-bold text-white tracking-tight">SLMS</h1>
-              <p className="text-[10px] text-slate-500 font-medium tracking-wider uppercase">Admin Panel</p>
+              <h1 className="text-[15px] font-bold tracking-tight">SLMS</h1>
+              <p className="text-[10px] text-[var(--text-secondary)] font-medium tracking-wider uppercase">Admin Panel</p>
             </div>
           </div>
         </div>
@@ -122,7 +123,7 @@ export default function AdminLayout({ children }) {
                   transition-all duration-200 relative
                   ${active
                     ? 'bg-indigo-500/10 text-indigo-400'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--card-border)]/50'
                   }
                 `}
               >
@@ -137,18 +138,18 @@ export default function AdminLayout({ children }) {
         </nav>
 
         {/* Bottom Profile */}
-        <div className="px-4 py-4 border-t border-white/[0.06]">
+        <div className="px-4 py-4 border-t border-[var(--card-border)]">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold">
               {user.name?.charAt(0) || 'A'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-slate-200 truncate">{user.name}</p>
-              <p className="text-[10px] text-slate-500">Admin</p>
+              <p className="text-xs font-semibold truncate">{user.name}</p>
+              <p className="text-[10px] text-[var(--text-secondary)]">Admin</p>
             </div>
             <button
               onClick={logout}
-              className="text-slate-500 hover:text-red-400 transition-colors"
+              className="text-[var(--text-secondary)] hover:text-red-400 transition-colors"
               title="Logout"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -163,22 +164,23 @@ export default function AdminLayout({ children }) {
       <div className="flex-1 flex flex-col min-h-screen min-w-0">
         {/* Top Header */}
         <header className="sticky top-0 z-30 h-14 flex items-center justify-between px-4 lg:px-6
-          bg-[#080b16]/80 backdrop-blur-xl border-b border-white/[0.06]">
+          bg-[var(--bg-primary)]/80 backdrop-blur-xl border-b border-[var(--card-border)]">
           {/* Mobile Hamburger */}
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden text-slate-400 hover:text-white p-1"
+            className="lg:hidden text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-1"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
 
-          <h2 className="text-sm font-semibold text-slate-200 hidden lg:block">
+          <h2 className="text-sm font-semibold hidden lg:block">
             {NAV_ITEMS.find((n) => n.href === pathname)?.label || 'Dashboard'}
           </h2>
 
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             {/* New Fee button — only on fees page */}
             {pathname === '/admin/fees' && (
               <button
@@ -198,7 +200,7 @@ export default function AdminLayout({ children }) {
             <div className="relative" ref={notifRef}>
               <button
                 onClick={() => setNotifOpen(!notifOpen)}
-                className="relative p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.04] transition-all"
+                className="relative p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--card-border)]/50 transition-all"
               >
                 <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -215,11 +217,11 @@ export default function AdminLayout({ children }) {
               {/* Dropdown */}
               {notifOpen && (
                 <div className="absolute right-0 top-full mt-2 w-[340px] max-h-[420px]
-                  rounded-2xl bg-[#0f1328] border border-white/[0.08]
+                  rounded-2xl bg-[var(--bg-secondary)] border border-[var(--card-border)]
                   shadow-2xl shadow-black/40 overflow-hidden z-50">
                   {/* Header */}
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
-                    <h3 className="text-[13px] font-semibold text-slate-200">Notifications</h3>
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--card-border)]">
+                    <h3 className="text-[13px] font-semibold">Notifications</h3>
                     {unreadCount > 0 && (
                       <button
                         onClick={markAllRead}
@@ -236,20 +238,20 @@ export default function AdminLayout({ children }) {
                       notifications.map((n, i) => (
                         <div
                           key={i}
-                          className="flex items-start gap-3 px-4 py-3 border-b border-white/[0.03]
-                            hover:bg-white/[0.02] transition-colors"
+                          className="flex items-start gap-3 px-4 py-3 border-b border-[var(--card-border)]/30
+                            hover:bg-[var(--card-border)]/50 transition-colors"
                         >
                           <span className="text-sm mt-0.5 shrink-0">{n.icon}</span>
                           <div className="flex-1 min-w-0">
-                            <p className="text-[12px] text-slate-300 leading-relaxed">{n.text}</p>
-                            <p className="text-[10px] text-slate-600 mt-0.5">{timeAgo(n.time)}</p>
+                            <p className="text-[12px] text-[var(--text-primary)] leading-relaxed">{n.text}</p>
+                            <p className="text-[10px] text-[var(--text-secondary)] mt-0.5">{timeAgo(n.time)}</p>
                           </div>
                         </div>
                       ))
                     ) : (
                       <div className="px-4 py-10 text-center">
                         <div className="text-2xl mb-2">🔔</div>
-                        <p className="text-[12px] text-slate-500">No new notifications</p>
+                        <p className="text-[12px] text-[var(--text-secondary)]">No new notifications</p>
                       </div>
                     )}
                   </div>
@@ -258,11 +260,11 @@ export default function AdminLayout({ children }) {
             </div>
 
             {/* Profile */}
-            <a href="/admin/profile" className="flex items-center gap-2 pl-3 border-l border-white/[0.06] cursor-pointer hover:opacity-80 transition-opacity">
+            <a href="/admin/profile" className="flex items-center gap-2 pl-3 border-l border-[var(--card-border)] cursor-pointer hover:opacity-80 transition-opacity">
               <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-[11px] font-bold">
                 {user.name?.charAt(0) || 'A'}
               </div>
-              <span className="text-xs text-slate-300 font-medium hidden sm:block">{user.name}</span>
+              <span className="text-xs text-[var(--text-secondary)] font-medium hidden sm:block">{user.name}</span>
             </a>
           </div>
         </header>

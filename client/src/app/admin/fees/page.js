@@ -103,14 +103,14 @@ export default function FeesPage() {
               px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all
               ${filter === f
                 ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30'
-                : 'bg-white/[0.03] text-slate-500 border border-white/[0.06] hover:bg-white/[0.06]'
+                : 'bg-[var(--card-border)]/20 text-[var(--text-secondary)] border border-[var(--card-border)]/30 hover:bg-[var(--card-border)]/40'
               }
             `}
           >
             {f === '' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
           </button>
         ))}
-        <span className="text-[11px] text-slate-600 ml-1">{total} records</span>
+        <span className="text-[11px] text-[var(--text-secondary)]/60 ml-1">{total} records</span>
       </div>
 
       {error && (
@@ -120,10 +120,10 @@ export default function FeesPage() {
       )}
 
       {/* Fees Table */}
-      <div className="rounded-2xl bg-[#0f1328]/80 border border-white/[0.06] overflow-hidden">
+      <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] overflow-hidden">
         <table className="w-full text-[13px]">
           <thead>
-            <tr className="text-[11px] text-slate-500 uppercase tracking-wider border-b border-white/[0.06]">
+            <tr className="text-[11px] text-[var(--text-secondary)] uppercase tracking-wider border-b border-[var(--card-border)]">
               <th className="text-left py-3 px-4 font-medium">Student</th>
               <th className="text-left py-3 px-4 font-medium">Type</th>
               <th className="text-right py-3 px-4 font-medium">Amount</th>
@@ -134,18 +134,18 @@ export default function FeesPage() {
           </thead>
           <tbody>
             {fees.map((f) => (
-              <tr key={f._id} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors group">
+              <tr key={f._id} className="border-b border-[var(--card-border)]/30 hover:bg-[var(--card-border)]/20 transition-colors group">
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-[10px] text-slate-400 font-bold">
+                    <div className="w-7 h-7 rounded-lg bg-[var(--bg-secondary)] border border-[var(--card-border)] flex items-center justify-center text-[10px] text-[var(--text-secondary)] font-bold">
                       {f.user?.name?.charAt(0) || '?'}
                     </div>
-                    <span className="text-slate-200">{f.user?.name || '—'}</span>
+                    <span className="">{f.user?.name || '—'}</span>
                   </div>
                 </td>
-                <td className="py-3 px-4 text-slate-400 capitalize">{f.type}</td>
-                <td className="py-3 px-4 text-right font-mono font-semibold text-white">₹{f.amount}</td>
-                <td className="py-3 px-4 text-center text-slate-400">
+                <td className="py-3 px-4 text-[var(--text-secondary)] capitalize">{f.type}</td>
+                <td className="py-3 px-4 text-right font-mono font-semibold">₹{f.amount}</td>
+                <td className="py-3 px-4 text-center text-[var(--text-secondary)]">
                   {new Date(f.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}
                 </td>
                 <td className="py-3 px-4 text-center">
@@ -160,7 +160,7 @@ export default function FeesPage() {
                       {f.status}
                     </span>
                     {f.submittedAt && (
-                      <span className="text-[9px] text-slate-500">
+                      <span className="text-[9px] text-[var(--text-secondary)]">
                         At: {new Date(f.submittedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     )}
@@ -181,7 +181,7 @@ export default function FeesPage() {
               </tr>
             ))}
             {fees.length === 0 && (
-              <tr><td colSpan={6} className="text-center py-12 text-slate-600 text-xs">No records found</td></tr>
+              <tr><td colSpan={6} className="text-center py-12 text-[var(--text-secondary)] text-xs">No records found</td></tr>
             )}
           </tbody>
         </table>
@@ -190,14 +190,14 @@ export default function FeesPage() {
       {/* Create Modal */}
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[#0f1328] border border-white/[0.08] p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--bg-primary)] border border-[var(--card-border)] p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-sm font-bold text-slate-200">Create Fee Entry</h2>
-              <button onClick={() => setShowCreate(false)} className="text-slate-500 hover:text-white text-lg transition-colors">✕</button>
+              <h2 className="text-sm font-bold">Create Fee Entry</h2>
+              <button onClick={() => setShowCreate(false)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-lg transition-colors">✕</button>
             </div>
             <form onSubmit={handleCreate} className="space-y-4">
               <div className="relative">
-                <label className="block text-[11px] text-slate-500 mb-1.5 uppercase tracking-wider font-medium">Student Name</label>
+                <label className="block text-[11px] text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider font-medium">Student Name</label>
                 <div className="relative" onClick={(e) => e.stopPropagation()}>
                   <input
                     type="text"
@@ -208,7 +208,7 @@ export default function FeesPage() {
                       if (!e.target.value) setForm({ ...form, userId: '' });
                     }}
                     onFocus={() => setShowSuggestions(true)}
-                    className="input-glass !bg-[#080b16] !rounded-xl text-[13px] w-full"
+                    className="input-glass !bg-[var(--bg-primary)] !rounded-xl text-[13px] w-full"
                     placeholder="Search by name or phone..."
                     required
                   />
@@ -219,9 +219,7 @@ export default function FeesPage() {
                   )}
                 </div>
 
-                {/* Suggestions Dropdown */}
-                {showSuggestions && suggestions.length > 0 && (
-                  <div className="absolute z-[60] left-0 right-0 mt-2 rounded-xl bg-[#1a1f35] border border-white/[0.08] shadow-2xl overflow-hidden max-h-48 overflow-y-auto">
+                  <div className="absolute z-[60] left-0 right-0 mt-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--card-border)] shadow-2xl overflow-hidden max-h-48 overflow-y-auto">
                     {suggestions.map((s) => (
                       <div
                         key={s._id}
@@ -230,33 +228,32 @@ export default function FeesPage() {
                           setStudentSearch(s.name);
                           setShowSuggestions(false);
                         }}
-                        className="p-3 hover:bg-white/[0.03] cursor-pointer border-b border-white/[0.03] last:border-0 transition-colors"
+                        className="p-3 hover:bg-[var(--card-border)]/50 cursor-pointer border-b border-[var(--card-border)]/30 last:border-0 transition-colors"
                       >
-                        <p className="text-[13px] font-semibold text-white">{s.name}</p>
-                        <p className="text-[10px] text-slate-500">{s.phone}</p>
+                        <p className="text-[13px] font-semibold">{s.name}</p>
+                        <p className="text-[10px] text-[var(--text-secondary)]">{s.phone}</p>
                       </div>
                     ))}
                   </div>
-                )}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] text-slate-500 mb-1.5 uppercase tracking-wider font-medium">Amount (₹)</label>
+                  <label className="block text-[11px] text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider font-medium">Amount (₹)</label>
                   <input
                     type="number"
                     value={form.amount}
                     onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                    className="input-glass !bg-[#080b16] !rounded-xl text-[13px]"
+                    className="input-glass !bg-[var(--bg-secondary)] !rounded-xl text-[13px]"
                     min="0"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-slate-500 mb-1.5 uppercase tracking-wider font-medium">Type</label>
+                  <label className="block text-[11px] text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider font-medium">Type</label>
                   <select
                     value={form.type}
                     onChange={(e) => setForm({ ...form, type: e.target.value })}
-                    className="input-glass !bg-[#080b16] !rounded-xl text-[13px]"
+                    className="input-glass !bg-[var(--bg-secondary)] !rounded-xl text-[13px]"
                   >
                     <option value="monthly">Monthly</option>
                     <option value="daily">Daily</option>
@@ -265,12 +262,12 @@ export default function FeesPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-[11px] text-slate-500 mb-1.5 uppercase tracking-wider font-medium">Due Date</label>
+                <label className="block text-[11px] text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider font-medium">Due Date</label>
                 <input
                   type="date"
                   value={form.dueDate}
                   onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
-                  className="input-glass !bg-[#080b16] !rounded-xl text-[13px]"
+                  className="input-glass !bg-[var(--bg-secondary)] !rounded-xl text-[13px]"
                   required
                 />
               </div>

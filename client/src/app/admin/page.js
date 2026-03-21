@@ -124,9 +124,9 @@ export default function AdminDashboard() {
             key={kpi.label}
             className={`
               relative overflow-hidden rounded-2xl
-              bg-[#0f1328]/80 border border-white/[0.06]
+              bg-[var(--card-bg)] border border-[var(--card-border)]
               p-4 lg:p-5 group
-              hover:border-white/[0.12] hover:shadow-xl ${kpi.glow}
+              hover:border-[var(--accent)]/50 hover:shadow-xl ${kpi.glow}
               transition-all duration-300 cursor-default
             `}
           >
@@ -134,14 +134,14 @@ export default function AdminDashboard() {
             <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${kpi.color} opacity-60 group-hover:opacity-100 transition-opacity`} />
 
             <div className="flex items-start justify-between mb-3">
-              <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${kpi.color} bg-opacity-10 flex items-center justify-center text-white/80`}>
+              <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${kpi.color} bg-opacity-10 flex items-center justify-center text-white`}>
                 {kpi.icon}
               </div>
             </div>
-            <div className="text-2xl lg:text-3xl font-bold text-white tracking-tight">
+            <div className="text-2xl lg:text-3xl font-bold tracking-tight">
               {kpi.value}{kpi.suffix || ''}
             </div>
-            <div className="text-[11px] text-slate-500 font-medium mt-1 uppercase tracking-wider">
+            <div className="text-[11px] text-[var(--text-secondary)] font-medium mt-1 uppercase tracking-wider">
               {kpi.label}
             </div>
             {kpi.sub && (
@@ -154,10 +154,10 @@ export default function AdminDashboard() {
       {/* ═══ Section 2: Occupancy Grid + Leaderboard ═══ */}
       <div className="grid lg:grid-cols-[1fr_340px] gap-4">
         {/* Desk Grid */}
-        <div className="rounded-2xl bg-[#0f1328]/80 border border-white/[0.06] p-5">
+        <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-slate-200">Live Occupancy</h3>
-            <div className="flex items-center gap-4 text-[11px] text-slate-500">
+            <h3 className="text-sm font-semibold">Live Occupancy</h3>
+            <div className="flex items-center gap-4 text-[11px] text-[var(--text-secondary)]">
               <span className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500/30 border border-emerald-500/50" /> Available
               </span>
@@ -183,10 +183,10 @@ export default function AdminDashboard() {
                 {/* Tooltip */}
                 {desk.isOccupied && desk.currentUser && (
                   <div className="absolute hidden group-hover/desk:block bottom-full left-1/2 -translate-x-1/2 mb-2 z-20
-                    px-2.5 py-1.5 rounded-lg bg-slate-800 border border-white/10
-                    text-[10px] text-slate-200 whitespace-nowrap shadow-xl">
+                    px-2.5 py-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--card-border)]
+                    text-[10px] text-[var(--text-primary)] whitespace-nowrap shadow-xl">
                     {desk.currentUser.name}
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[5px] border-r-[5px] border-t-[5px] border-transparent border-t-slate-800" />
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[5px] border-r-[5px] border-t-[5px] border-transparent border-t-[var(--card-border)]" />
                   </div>
                 )}
               </div>
@@ -195,37 +195,37 @@ export default function AdminDashboard() {
         </div>
 
         {/* Leaderboard */}
-        <div className="rounded-2xl bg-[#0f1328]/80 border border-white/[0.06] p-5">
-          <h3 className="text-sm font-semibold text-slate-200 mb-4">🏅 Top 5 Leaderboard</h3>
+        <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5">
+          <h3 className="text-sm font-semibold mb-4">🏅 Top 5 Leaderboard</h3>
           <div className="space-y-2">
             {leaderboard.map((entry, i) => (
               <div
                 key={entry.rank}
                 className={`
                   flex items-center gap-3 p-2.5 rounded-xl transition-all duration-200
-                  ${i < 3 ? 'bg-white/[0.03] hover:bg-white/[0.06]' : 'hover:bg-white/[0.03]'}
+                  hover:bg-[var(--card-border)]/30
                 `}
               >
                 <div className={`
                   w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold
-                  ${i === 0 ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' :
-                    i === 1 ? 'bg-slate-400/10 text-slate-300 border border-slate-400/20' :
+                  ${i === 0 ? 'bg-amber-500/15 text-amber-500 border border-amber-500/30' :
+                    i === 1 ? 'bg-slate-400/10 text-slate-500 border border-slate-400/20' :
                     i === 2 ? 'bg-amber-700/15 text-amber-600 border border-amber-700/20' :
-                    'bg-white/[0.03] text-slate-500 border border-white/[0.06]'}
+                    'bg-[var(--card-border)]/5 text-[var(--text-secondary)] border border-[var(--card-border)]/30'}
                 `}>
                   {entry.rank}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-medium text-slate-200 truncate">{entry.name}</p>
+                  <p className="text-[13px] font-medium truncate">{entry.name}</p>
                 </div>
                 <div className="flex items-center gap-2 text-xs">
-                  <span className="text-amber-400 font-semibold">🔥{entry.currentStreak}</span>
-                  <span className="text-slate-500">{entry.totalStudyHours}h</span>
+                  <span className="text-amber-500 font-bold">🔥 {entry.currentStreak}</span>
+                  <span className="text-[var(--text-secondary)] font-mono">{entry.totalStudyHours}h</span>
                 </div>
               </div>
             ))}
             {leaderboard.length === 0 && (
-              <p className="text-center text-slate-600 text-xs py-8">No data yet</p>
+              <p className="text-center text-[var(--text-secondary)] text-xs py-8">No data yet</p>
             )}
           </div>
         </div>
@@ -234,9 +234,9 @@ export default function AdminDashboard() {
       {/* ═══ Section 3: Fees + Activity Feed ═══ */}
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Pending Fees */}
-        <div className="rounded-2xl bg-[#0f1328]/80 border border-white/[0.06] p-5">
+        <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-slate-200">💰 Pending Fees</h3>
+            <h3 className="text-sm font-semibold">💰 Pending Fees</h3>
             <a href="/admin/fees" className="text-[11px] text-indigo-400 hover:text-indigo-300 font-medium">
               View All →
             </a>
@@ -245,15 +245,15 @@ export default function AdminDashboard() {
             {fees.map((fee) => (
               <div
                 key={fee._id}
-                className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-all group"
+                className="flex items-center justify-between p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--card-border)]/50 transition-all group"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400 text-xs font-bold">
+                  <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500 text-xs font-bold">
                     ₹
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[13px] font-medium text-slate-200 truncate">{fee.user?.name || '—'}</p>
-                    <p className="text-[11px] text-slate-500">
+                    <p className="text-[13px] font-medium truncate">{fee.user?.name || '—'}</p>
+                    <p className="text-[11px] text-[var(--text-secondary)] font-medium">
                       Due {new Date(fee.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' })}
                       <span className="mx-1.5">·</span>
                       <span className="capitalize">{fee.type}</span>
@@ -261,11 +261,11 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-bold text-white">₹{fee.amount}</span>
+                  <span className="text-sm font-bold">₹{fee.amount}</span>
                   <button
                     onClick={() => handleMarkPaid(fee._id)}
                     className="opacity-0 group-hover:opacity-100 px-2.5 py-1 rounded-lg
-                      bg-emerald-500/10 border border-emerald-500/30 text-emerald-400
+                      bg-emerald-500/10 border border-emerald-500/30 text-emerald-500
                       text-[11px] font-semibold hover:bg-emerald-500/20 transition-all"
                   >
                     ✓ Paid
@@ -275,32 +275,32 @@ export default function AdminDashboard() {
             ))}
             {fees.length === 0 && (
               <div className="text-center py-8">
-                <p className="text-slate-600 text-xs">No pending fees 🎉</p>
+                <p className="text-[var(--text-secondary)] text-xs font-medium">No pending fees 🎉</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Recent Activity */}
-        <div className="rounded-2xl bg-[#0f1328]/80 border border-white/[0.06] p-5">
-          <h3 className="text-sm font-semibold text-slate-200 mb-4">⚡ Recent Activity</h3>
+        <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5">
+          <h3 className="text-sm font-semibold mb-4">⚡ Recent Activity</h3>
           <div className="space-y-1">
             {activity.map((a, i) => (
               <div
                 key={i}
-                className="flex items-start gap-3 py-2.5 border-b border-white/[0.03] last:border-0"
+                className="flex items-start gap-3 py-2.5 border-b border-[var(--card-border)]/30 last:border-0"
               >
                 <div className="mt-0.5 text-sm">{a.icon}</div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12px] text-slate-300">{a.text}</p>
-                  <p className="text-[10px] text-slate-600 mt-0.5">
+                  <p className="text-[12px] text-[var(--text-secondary)] font-medium leading-relaxed">{a.text}</p>
+                  <p className="text-[10px] text-[var(--text-secondary)]/60 mt-0.5">
                     {formatTime(a.time)}
                   </p>
                 </div>
               </div>
             ))}
             {activity.length === 0 && (
-              <p className="text-center text-slate-600 text-xs py-8">No activity yet</p>
+              <p className="text-center text-[var(--text-secondary)] text-xs py-8">No activity yet</p>
             )}
           </div>
         </div>
