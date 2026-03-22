@@ -183,8 +183,7 @@ export default function AdminLayout({ children }) {
           </h2>
 
           <div className="flex items-center gap-3">
-            <LanguageToggle />
-            <ThemeToggle />
+            {/* Toggles moved to Profile Page */}
             {/* New Fee button — only on fees page */}
             {pathname === '/admin/fees' && (
               <button

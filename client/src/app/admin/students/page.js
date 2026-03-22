@@ -68,7 +68,7 @@ export default function StudentsPage() {
   return (
     <div className="space-y-5 max-w-[1400px]">
       {/* Top Bar */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4 flex-1">
           <div className="relative flex-1 max-w-sm">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,25 +79,25 @@ export default function StudentsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t('search_placeholder')}
-              className="w-full pl-10 pr-4 py-2 rounded-xl text-[13px]
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl text-[13px]
                 bg-[var(--card-bg)] border border-[var(--card-border)] text-[var(--text-primary)]
                 placeholder-[var(--text-secondary)] outline-none focus:border-indigo-500/40
-                transition-all"
+                transition-all shadow-sm"
             />
           </div>
-          <span className="text-[11px] text-[var(--text-secondary)] font-medium">{total} {t('students')}</span>
+          <span className="text-[11px] text-[var(--text-secondary)] font-medium whitespace-nowrap">{total} {t('students')}</span>
         </div>
         
         <button
           onClick={() => setShowAddModal(true)}
-          className="px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-[12px] font-bold transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/20"
+          className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-[12px] font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20 active:scale-95"
         >
           <span>＋</span> {t('add_student')}
         </button>
       </div>
 
-      {/* Students Table */}
-      <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] overflow-hidden">
+      {/* Students Desktop Table */}
+      <div className="hidden lg:block rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] overflow-hidden">
         <table className="w-full text-[13px]">
           <thead>
             <tr className="text-[11px] text-[var(--text-secondary)] uppercase tracking-wider border-b border-[var(--card-border)]">
@@ -114,11 +114,11 @@ export default function StudentsPage() {
               <tr key={s._id} className="border-b border-[var(--card-border)]/30 hover:bg-[var(--card-border)]/20 transition-colors">
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/20 flex items-center justify-center text-[11px] text-indigo-400 font-bold">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 flex items-center justify-center text-[11px] text-indigo-400 font-bold">
                       {s.name?.charAt(0) || '?'}
                     </div>
                     <div>
-                      <p className="font-medium">{s.name}</p>
+                      <p className="font-semibold">{s.name}</p>
                       <p className="text-[11px] text-[var(--text-secondary)]">{s.phone}</p>
                     </div>
                   </div>
@@ -130,7 +130,7 @@ export default function StudentsPage() {
                   {s.longestStreak}
                 </td>
                 <td className="py-3 px-4 text-center">
-                  <span className="font-mono font-semibold">₹{s.totalStudyHours}h</span>
+                  <span className="font-mono font-bold text-indigo-400">{s.totalStudyHours}h</span>
                 </td>
                 <td className="py-3 px-4 text-center">
                   <span className={`
@@ -156,6 +156,59 @@ export default function StudentsPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Students Mobile List */}
+      <div className="lg:hidden space-y-4">
+        {students.map((s) => (
+          <div key={s._id} className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 flex items-center justify-center text-xs text-indigo-400 font-bold">
+                  {s.name?.charAt(0) || '?'}
+                </div>
+                <div>
+                  <p className="text-[14px] font-bold">{s.name}</p>
+                  <p className="text-[11px] text-[var(--text-secondary)]">{s.phone}</p>
+                </div>
+              </div>
+              <span className={`
+                inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold
+                ${s.isActive
+                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                  : 'bg-[var(--card-border)]/5 text-[var(--text-secondary)] border border-[var(--card-border)]/30'
+                }
+              `}>
+                {s.isActive ? t('active') : t('inactive')}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 pt-3 border-t border-[var(--card-border)]/30">
+              <div className="text-center p-2 rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--card-border)]/20">
+                <p className="text-[9px] text-[var(--text-secondary)] uppercase tracking-wider font-bold mb-1">{t('streak')}</p>
+                <p className="text-[13px] font-bold text-amber-500">🔥 {s.currentStreak}</p>
+              </div>
+              <div className="text-center p-2 rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--card-border)]/20">
+                <p className="text-[9px] text-[var(--text-secondary)] uppercase tracking-wider font-bold mb-1">{t('study')}</p>
+                <p className="text-[13px] font-bold text-indigo-400">{s.totalStudyHours}h</p>
+              </div>
+              <div className="text-center p-2 rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--card-border)]/20">
+                <p className="text-[9px] text-[var(--text-secondary)] uppercase tracking-wider font-bold mb-1">{t('active')}</p>
+                <p className="text-[11px] font-medium">
+                  {s.lastActiveDate
+                    ? new Date(s.lastActiveDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+                    : '—'
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
+        {students.length === 0 && (
+          <div className="text-center py-12 bg-[var(--card-bg)] rounded-3xl border border-[var(--card-border)]">
+            <p className="text-[var(--text-secondary)] text-xs">{t('no_students_found')}</p>
+          </div>
+        )}
       </div>
 
       {/* Add Student Modal */}

@@ -91,8 +91,7 @@ export default function ProfilePage() {
             <h1 className="text-sm font-bold">{t('profile')}</h1>
           </div>
           <div className="flex items-center gap-2">
-            <LanguageToggle />
-            <ThemeToggle />
+            {/* Toggles moved to bottom */}
           </div>
         </div>
       </header>
@@ -140,20 +139,37 @@ export default function ProfilePage() {
           ))}
         </div>
 
+        {/* ═══ Appearance & Language ═══ */}
+        <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5">
+          <h3 className="text-sm font-semibold mb-4 text-[var(--text-secondary)] uppercase tracking-wider text-[10px]">
+            ⚙️ {t('preferences') || 'Preferences'}
+          </h3>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--card-border)]">
+              <span className="text-[13px] font-medium">{t('appearance') || 'Appearance'}</span>
+              <ThemeToggle />
+            </div>
+            <div className="flex items-center justify-between p-3.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--card-border)]">
+              <span className="text-[13px] font-medium">{t('language') || 'Language'}</span>
+              <LanguageToggle />
+            </div>
+          </div>
+        </div>
+
         {/* ═══ Actions ═══ */}
         <div className="space-y-3">
           <button
             onClick={() => router.push('/leaderboard')}
-            className="w-full py-3 rounded-2xl text-[13px] font-semibold flex items-center justify-center gap-2
+            className="w-full py-4 rounded-2xl text-[13px] font-semibold flex items-center justify-center gap-2
               bg-[var(--card-bg)] border border-[var(--card-border)] text-[var(--text-primary)]
-              hover:bg-[var(--card-border)]/50 transition-all"
+              hover:bg-[var(--card-border)]/50 transition-all shadow-sm"
           >
             🏅 {t('view_leaderboard') || 'View Full Leaderboard'}
           </button>
 
           <button
             onClick={handleLogout}
-            className="w-full py-3 rounded-2xl text-[13px] font-semibold flex items-center justify-center gap-2
+            className="w-full py-4 rounded-2xl text-[13px] font-semibold flex items-center justify-center gap-2
               bg-red-500/8 border border-red-500/20 text-red-400
               hover:bg-red-500/15 transition-all"
           >

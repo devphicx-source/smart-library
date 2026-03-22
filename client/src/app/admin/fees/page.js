@@ -121,8 +121,8 @@ export default function FeesPage() {
         </div>
       )}
 
-      {/* Fees Table */}
-      <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] overflow-hidden">
+      {/* Fees Desktop Table */}
+      <div className="hidden lg:block rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] overflow-hidden">
         <table className="w-full text-[13px]">
           <thead>
             <tr className="text-[11px] text-[var(--text-secondary)] uppercase tracking-wider border-b border-[var(--card-border)]">
@@ -142,11 +142,11 @@ export default function FeesPage() {
                     <div className="w-7 h-7 rounded-lg bg-[var(--bg-secondary)] border border-[var(--card-border)] flex items-center justify-center text-[10px] text-[var(--text-secondary)] font-bold">
                       {f.user?.name?.charAt(0) || '?'}
                     </div>
-                    <span className="">{f.user?.name || '—'}</span>
+                    <span className="font-medium">{f.user?.name || '—'}</span>
                   </div>
                 </td>
                 <td className="py-3 px-4 text-[var(--text-secondary)] capitalize">{t(f.type)}</td>
-                <td className="py-3 px-4 text-right font-mono font-semibold">₹{f.amount}</td>
+                <td className="py-3 px-4 text-right font-mono font-semibold text-indigo-400">₹{f.amount}</td>
                 <td className="py-3 px-4 text-center text-[var(--text-secondary)]">
                   {new Date(f.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}
                 </td>
@@ -187,6 +187,60 @@ export default function FeesPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Fees Mobile List */}
+      <div className="lg:hidden space-y-4">
+        {fees.map((f) => (
+          <div key={f._id} className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[var(--bg-secondary)] border border-[var(--card-border)] flex items-center justify-center text-xs text-[var(--text-secondary)] font-bold">
+                  {f.user?.name?.charAt(0) || '?'}
+                </div>
+                <div>
+                  <p className="text-[13px] font-bold">{f.user?.name || '—'}</p>
+                  <p className="text-[11px] text-[var(--text-secondary)] capitalize">{t(f.type)} Fee</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-[15px] font-mono font-black text-indigo-400">₹{f.amount}</p>
+                <span className={`
+                  inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider mt-1
+                  ${f.status === 'paid' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                    f.status === 'overdue' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                    f.status === 'submitted' ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' :
+                     'bg-amber-500/10 text-amber-400 border border-amber-500/20'}
+                `}>
+                  {t(f.status)}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-3 border-t border-[var(--card-border)]/30">
+              <div>
+                <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-bold">{t('due_date')}</p>
+                <p className="text-[12px] font-medium">
+                   {new Date(f.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}
+                </p>
+              </div>
+              
+              {(f.status === 'pending' || f.status === 'overdue' || f.status === 'submitted') && (
+                <button
+                  onClick={() => handleMarkPaid(f._id)}
+                  className="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold hover:bg-emerald-500/20 transition-all active:scale-95"
+                >
+                  ✓ {t('paid_mark')}
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+        {fees.length === 0 && (
+          <div className="text-center py-12 bg-[var(--card-bg)] rounded-3xl border border-[var(--card-border)]">
+            <p className="text-[var(--text-secondary)] text-xs">{t('no_records_found')}</p>
+          </div>
+        )}
       </div>
 
       {/* Create Modal */}

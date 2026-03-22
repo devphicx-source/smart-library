@@ -266,7 +266,7 @@ export default function AdminDashboard() {
                   <span className="text-sm font-bold">₹{fee.amount}</span>
                   <button
                     onClick={() => handleMarkPaid(fee._id)}
-                    className="opacity-0 group-hover:opacity-100 px-2.5 py-1 rounded-lg
+                    className="sm:opacity-0 group-hover:opacity-100 px-2.5 py-1 rounded-lg
                       bg-emerald-500/10 border border-emerald-500/30 text-emerald-500
                       text-[11px] font-semibold hover:bg-emerald-500/20 transition-all"
                   >

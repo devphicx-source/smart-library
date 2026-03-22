@@ -9,33 +9,35 @@ const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000; // +5:30 in milliseconds
 /**
  * Get the current date-time in IST as a JS Date object.
  */
+/**
+ * Get the current date-time in IST as a JS Date object.
+ */
 function nowIST() {
   const utc = new Date();
-  return new Date(utc.getTime() + IST_OFFSET_MS);
+  return new Date(utc.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
 }
 
 /**
  * Get today's IST date string in YYYY-MM-DD format.
  */
 function todayIST() {
-  return nowIST().toISOString().slice(0, 10);
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
 }
 
 /**
  * Get yesterday's IST date string in YYYY-MM-DD format.
  */
 function yesterdayIST() {
-  const ist = nowIST();
-  ist.setDate(ist.getDate() - 1);
-  return ist.toISOString().slice(0, 10);
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
 }
 
 /**
  * Convert any UTC Date to its IST date string (YYYY-MM-DD).
  */
 function utcToISTDate(utcDate) {
-  const ist = new Date(utcDate.getTime() + IST_OFFSET_MS);
-  return ist.toISOString().slice(0, 10);
+  return utcDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
 }
 
 /**
@@ -46,7 +48,8 @@ function startOfISTDay(istDateStr) {
   // istDateStr = "YYYY-MM-DD"
   const [y, m, d] = istDateStr.split('-').map(Number);
   // Midnight IST = previous day 18:30 UTC
-  return new Date(Date.UTC(y, m - 1, d) - IST_OFFSET_MS);
+  // We use UTC constructor to avoid local time interference
+  return new Date(Date.UTC(y, m - 1, d, 0, 0, 0, 0) - IST_OFFSET_MS);
 }
 
 /**
@@ -54,12 +57,11 @@ function startOfISTDay(istDateStr) {
  */
 function endOfISTDay(istDateStr) {
   const start = startOfISTDay(istDateStr);
-  return new Date(start.getTime() + 24 * 60 * 60 * 1000);
+  return new Date(start.getTime() + 24 * 60 * 60 * 1000 - 1); // 23:59:59.999
 }
 
 module.exports = {
   IST_OFFSET_MS,
-  nowIST,
   todayIST,
   yesterdayIST,
   utcToISTDate,

@@ -4,8 +4,13 @@ const Payment = require('../models/Payment');
  * Create initial fee for a new student
  */
 exports.createInitialFee = async (userId) => {
+  const billingStartDate = new Date();
+  const billingEndDate = new Date();
+  billingEndDate.setDate(billingEndDate.getDate() + 30);
+  
+  // First fee due within 3 days
   const dueDate = new Date();
-  dueDate.setDate(dueDate.getDate() + 30);
+  dueDate.setDate(dueDate.getDate() + 3);
 
   return await Payment.create({
     user: userId,
@@ -13,8 +18,8 @@ exports.createInitialFee = async (userId) => {
     type: 'monthly',
     status: 'pending',
     dueDate,
-    billingStartDate: new Date(),
-    billingEndDate: dueDate,
+    billingStartDate,
+    billingEndDate,
   });
 };
 

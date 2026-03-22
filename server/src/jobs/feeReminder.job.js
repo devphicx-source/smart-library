@@ -26,9 +26,15 @@ const initFeeReminderJob = () => {
       }).populate('user');
 
       for (const payment of payments) {
+        // Skip if reminder already sent today (within last 20 hours to be safe)
+        if (payment.lastReminderSent && (today - payment.lastReminderSent) < 20 * 60 * 60 * 1000) {
+          continue;
+        }
+
         if (payment.user && payment.user.phone) {
           await sendFeeReminder(payment.user, payment.amount, payment.dueDate);
           payment.reminderCount += 1;
+          payment.lastReminderSent = new Date();
           await payment.save();
         }
       }

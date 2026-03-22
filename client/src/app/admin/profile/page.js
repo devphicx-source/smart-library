@@ -3,9 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { getDailyStats, getOccupancy, getAllFees, getAllStudents } from '@/lib/api';
+import ThemeToggle from '@/components/ThemeToggle';
+import LanguageToggle from '@/components/LanguageToggle';
+import { useLanguage } from '@/lib/language-context';
 
 export default function AdminProfile() {
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
@@ -107,17 +111,32 @@ export default function AdminProfile() {
         </div>
       </div>
 
+      {/* ═══ Preferences ═══ */}
+      <div className="rounded-2xl bg-[var(--card-bg)] border border-[var(--card-border)] p-5">
+        <h3 className="text-sm font-semibold mb-4">⚙️ {t('preferences') || 'Preferences'}</h3>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--card-border)]">
+            <span className="text-[13px] text-[var(--text-secondary)]">{t('appearance') || 'Appearance'}</span>
+            <ThemeToggle />
+          </div>
+          <div className="flex items-center justify-between p-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--card-border)]">
+            <span className="text-[13px] text-[var(--text-secondary)]">{t('language') || 'Language'}</span>
+            <LanguageToggle />
+          </div>
+        </div>
+      </div>
+
       {/* ═══ Logout ═══ */}
       <button
         onClick={logout}
-        className="w-full py-3 rounded-2xl text-[13px] font-semibold flex items-center justify-center gap-2
+        className="w-full py-4 rounded-2xl text-[13px] font-semibold flex items-center justify-center gap-2
           bg-red-500/8 border border-red-500/20 text-red-400
-          hover:bg-red-500/15 transition-all"
+          hover:bg-red-500/15 transition-all shadow-sm"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
         </svg>
-        Logout
+        {t('logout')}
       </button>
     </div>
   );

@@ -21,7 +21,7 @@ export default function LoginPage() {
   
   const router = useRouter();
   const { login } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   // Initialize reCAPTCHA
   useEffect(() => {
@@ -176,14 +176,16 @@ export default function LoginPage() {
                   
                   <div className="space-y-2">
                     <label className="block text-[11px] text-[var(--text-secondary)] uppercase tracking-wider font-bold ml-1">{t('phone_number')}</label>
-                    <div className="relative flex items-center">
-                      <span className="absolute left-4 text-[var(--text-secondary)] text-sm font-semibold pointer-events-none">+91</span>
+                    <div className="flex items-stretch overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--input-bg)] focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
+                      <div className="flex items-center px-4 bg-[var(--card-border)]/10 border-r border-[var(--card-border)] text-[var(--text-secondary)] text-sm font-bold pointer-events-none">
+                        +91
+                      </div>
                       <input
                         type="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                         placeholder="9876543210"
-                        className="input-glass !pl-12"
+                        className="w-full bg-transparent px-4 py-3 text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)] placeholder:opacity-40"
                         required
                       />
                     </div>
@@ -254,7 +256,7 @@ export default function LoginPage() {
                 </form>
               )}
   
-              <p className="mt-8 text-[10px] text-[var(--text-secondary)] opacity-60 leading-relaxed max-w-[240px] mx-auto">
+              <p className="mt-8 text-[11px] text-[var(--text-secondary)] opacity-80 leading-relaxed max-w-[280px] mx-auto">
                 {t('terms_privacy')}
               </p>
             </div>
